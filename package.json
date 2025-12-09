@@ -1,8 +1,8 @@
 {
-  "name": "algol-digital-solutions",
+  "name": "algol-digital-solutions-website",
   "version": "1.0.0",
   "private": true,
-  "description": "Algol Digital Solutions - E-commerce Platform",
+  "description": "Algol Digital Solutions - E-commerce Platform Website",
   "author": "Algol Insights",
   "license": "MIT",
   "scripts": {

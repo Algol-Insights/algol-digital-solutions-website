@@ -50,7 +50,7 @@ export default function ProductsPage() {
     }
 
     if (filters.inStock) {
-      result = result.filter(p => p.stock > 0)
+      result = result.filter(p => (p.stock ?? (p.inStock ? 1 : 0)) > 0)
     }
 
     // Sort
@@ -227,7 +227,7 @@ export default function ProductsPage() {
                         <div className="w-full h-full flex items-center justify-center text-slate-600 font-semibold">
                           {product.category}
                         </div>
-                        {product.stock === 0 && (
+                        {(product.stock ?? (product.inStock ? 1 : 0)) === 0 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                             <span className="text-white font-bold">Out of Stock</span>
                           </div>
@@ -294,9 +294,9 @@ export default function ProductsPage() {
                             </div>
                           )}
                           <div>
-                            <span className={`text-sm font-semibold ${product.stock > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                              {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                            </span>
+                            <span className={`text-sm font-semibold ${(product.stock ?? (product.inStock ? 1 : 0)) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {(product.stock ?? (product.inStock ? 1 : 0)) > 0 ? `${product.stock ?? 1} in stock` : 'Out of stock'}
+                              </span>
                           </div>
                         </div>
                       </div>

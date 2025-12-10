@@ -4,13 +4,13 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 export interface WishlistItem {
-  id: number
+  id: string | number
   name: string
   category: string
   price: number
   originalPrice?: number
-  rating: number
-  reviews: number
+  rating?: number
+  reviews?: number
   image: string
   inStock: boolean
   addedAt: Date
@@ -20,14 +20,16 @@ export interface WishlistItem {
 interface WishlistStore {
   items: WishlistItem[]
   addItem: (item: Omit<WishlistItem, "addedAt" | "priceHistory">) => void
-  removeItem: (id: number) => void
+  removeItem: (id: string | number) => void
+  addToWishlist: (item: Omit<WishlistItem, "addedAt" | "priceHistory">) => void
+  removeFromWishlist: (id: string | number) => void
   clearWishlist: () => void
-  isInWishlist: (id: number) => boolean
-  moveToCart: (id: number) => void
+  isInWishlist: (id: string | number) => boolean
+  moveToCart: (id: string | number) => void
   getPriceDrops: () => WishlistItem[]
 }
 
-export const useWishlist = create<WishlistStore>()(
+export const useWishlistStore = create<WishlistStore>()(
   persist(
     (set, get) => ({
       items: [],
@@ -53,6 +55,10 @@ export const useWishlist = create<WishlistStore>()(
           items: state.items.filter((item) => item.id !== id)
         }))
       },
+
+      // Aliases for convenience
+      addToWishlist: (item) => get().addItem(item),
+      removeFromWishlist: (id) => get().removeItem(id),
 
       clearWishlist: () => {
         set({ items: [] })
@@ -86,3 +92,6 @@ export const useWishlist = create<WishlistStore>()(
     }
   )
 )
+
+// Export alias for backwards compatibility
+export const useWishlist = useWishlistStore

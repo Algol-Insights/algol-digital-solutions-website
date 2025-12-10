@@ -92,9 +92,11 @@ function SearchContent() {
                 <p className="text-muted-foreground mb-6">
                   Try different keywords or browse our categories
                 </p>
-                <Button asChild>
-                  <Link href="/products">Browse All Products</Link>
-                </Button>
+                <Link href="/products">
+                  <Button>
+                    Browse All Products
+                  </Button>
+                </Link>
               </div>
             )}
           </>
@@ -113,9 +115,11 @@ function SearchContent() {
               <h4 className="text-sm font-medium text-muted-foreground mb-4">Or browse by category</h4>
               <div className="flex flex-wrap justify-center gap-2">
                 {["Laptops", "Desktops", "Networking", "Monitors", "Accessories"].map((cat) => (
-                  <Button key={cat} variant="outline" size="sm" asChild>
-                    <Link href={`/products?category=${cat}`}>{cat}</Link>
-                  </Button>
+                  <Link key={cat} href={`/products?category=${cat}`}>
+                    <Button variant="outline" size="sm">
+                      {cat}
+                    </Button>
+                  </Link>
                 ))}
               </div>
             </div>

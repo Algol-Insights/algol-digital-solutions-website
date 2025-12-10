@@ -62,8 +62,8 @@ const contactMethods = [
     icon: MessageCircle,
     title: "WhatsApp",
     description: "Quick chat support",
-    value: "+263 77 123 4567",
-    action: "https://wa.me/263771234567",
+    value: "+263 788 663 313",
+    action: "https://wa.me/263788663313",
     available: "Mon-Sat 8AM-8PM"
   },
   {
@@ -201,18 +201,18 @@ export default function SupportPage() {
               Our dedicated support team is ready to assist you with any questions or concerns.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild className="bg-white text-violet-600 hover:bg-white/90">
-                <a href="mailto:support@algolsolutions.co.zw">
+              <a href="mailto:support@algolsolutions.co.zw">
+                <Button className="bg-white text-violet-600 hover:bg-white/90">
                   <Mail className="mr-2 h-4 w-4" />
                   Email Us
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="border-white text-white hover:bg-white/10">
-                <a href="https://wa.me/263771234567" target="_blank" rel="noopener noreferrer">
+                </Button>
+              </a>
+              <a href="https://wa.me/263771234567" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="border-white text-white hover:bg-white/10">
                   <MessageCircle className="mr-2 h-4 w-4" />
                   WhatsApp
-                </a>
-              </Button>
+                </Button>
+              </a>
             </div>
           </div>
         </section>

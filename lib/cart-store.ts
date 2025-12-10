@@ -16,6 +16,7 @@ export interface Product {
   reviewCount?: number
   specs?: Record<string, string>
   featured?: boolean
+  createdAt?: Date | string
 }
 
 export interface CartItem extends Product {

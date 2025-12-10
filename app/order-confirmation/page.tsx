@@ -25,7 +25,7 @@ const mockOrder = {
     name: "John Moyo",
     address: "45 Churchill Avenue",
     city: "Harare",
-    phone: "+263 77 123 4567",
+    phone: "+263 788 663 313",
   }
 }
 
@@ -191,18 +191,18 @@ export default function OrderConfirmationPage() {
               Our support team is here to help with any questions.
             </p>
             <div className="flex gap-3">
-              <Button asChild variant="outline" size="sm">
-                <Link href="/support">
+              <Link href="/support">
+                <Button variant="outline" size="sm">
                   <Mail className="mr-2 h-4 w-4" />
                   Contact Us
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <a href="tel:+263242123456">
+                </Button>
+              </Link>
+              <a href="tel:+263788663313">
+                <Button variant="outline" size="sm">
                   <Phone className="mr-2 h-4 w-4" />
                   Call
-                </a>
-              </Button>
+                </Button>
+              </a>
             </div>
           </div>
           <div className="bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-xl p-6">
@@ -210,11 +210,11 @@ export default function OrderConfirmationPage() {
             <p className="text-sm text-white/80 mb-4">
               Explore more great products for your business.
             </p>
-            <Button asChild className="bg-white text-violet-600 hover:bg-white/90">
-              <Link href="/products">
+            <Link href="/products">
+              <Button className="bg-white text-violet-600 hover:bg-white/90">
                 Browse Products <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

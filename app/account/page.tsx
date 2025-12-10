@@ -65,7 +65,7 @@ const mockAddresses = [
     name: "John Moyo",
     address: "45 Churchill Avenue",
     city: "Harare",
-    phone: "+263 77 123 4567",
+    phone: "+263 788 663 313",
     isDefault: true,
   },
   {
@@ -250,12 +250,12 @@ export default function AccountPage() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h1 className="text-2xl font-bold">My Orders</h1>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/products">
+                  <Link href="/products">
+                    <Button variant="outline" size="sm">
                       <ShoppingBag className="mr-2 h-4 w-4" />
                       Continue Shopping
-                    </Link>
-                  </Button>
+                    </Button>
+                  </Link>
                 </div>
 
                 {mockOrders.length === 0 ? (
@@ -263,9 +263,11 @@ export default function AccountPage() {
                     <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                     <h3 className="text-lg font-medium mb-2">No orders yet</h3>
                     <p className="text-muted-foreground mb-6">Start shopping to see your orders here</p>
-                    <Button asChild>
-                      <Link href="/products">Browse Products</Link>
-                    </Button>
+                    <Link href="/products">
+                      <Button>
+                        Browse Products
+                      </Button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-4">

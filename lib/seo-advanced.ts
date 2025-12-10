@@ -5,7 +5,7 @@ export interface SEOConfig {
   description: string
   keywords?: string[]
   ogImage?: string
-  ogType?: 'website' | 'article' | 'product'
+  ogType?: 'website' | 'article'
   author?: string
   url?: string
   structuredData?: Record<string, any>

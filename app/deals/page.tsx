@@ -41,11 +41,11 @@ export default function DealsPage() {
               Don&apos;t miss out on these exclusive deals!
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-white text-orange-600 hover:bg-white/90">
-                <a href="#all-deals">
+              <a href="#all-deals">
+                <Button size="lg" className="bg-white text-orange-600 hover:bg-white/90">
                   View All Deals <ArrowRight className="ml-2 h-5 w-5" />
-                </a>
-              </Button>
+                </Button>
+              </a>
             </div>
           </div>
         </div>
@@ -152,9 +152,11 @@ export default function DealsPage() {
               <h2 className="text-3xl font-bold">All Deals</h2>
               <p className="text-muted-foreground mt-2">{saleProducts.length} products on sale</p>
             </div>
-            <Button asChild variant="outline">
-              <Link href="/products">View All Products</Link>
-            </Button>
+            <Link href="/products">
+              <Button variant="outline">
+                View All Products
+              </Button>
+            </Link>
           </div>
 
           {saleProducts.length === 0 ? (
@@ -162,9 +164,11 @@ export default function DealsPage() {
               <Tag className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">No deals available</h3>
               <p className="text-muted-foreground mb-6">Check back soon for new offers!</p>
-              <Button asChild>
-                <Link href="/products">Browse All Products</Link>
-              </Button>
+              <Link href="/products">
+                <Button>
+                  Browse All Products
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

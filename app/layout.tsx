@@ -17,14 +17,20 @@ export const metadata: Metadata = {
   keywords: ["laptops Zimbabwe", "computers Harare", "IT equipment", "Dell", "HP", "Cisco", "networking", "software"],
   authors: [{ name: "Algol Insights" }],
   robots: "index, follow",
+  icons: {
+    icon: "/digital-solutions-logo.png",
+    apple: "/digital-solutions-logo.png",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     siteName: "Algol Digital Solutions",
+    images: ["/digital-solutions-logo.png"],
   },
   twitter: {
     card: "summary_large_image",
     creator: "@algolinsights",
+    images: ["/digital-solutions-logo.png"],
   },
 }
 

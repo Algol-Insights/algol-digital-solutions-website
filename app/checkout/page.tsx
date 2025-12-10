@@ -92,12 +92,16 @@ export default function CheckoutPage() {
               Order ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}
             </p>
             <div className="space-y-3">
-              <Button asChild className="w-full bg-violet-600 hover:bg-violet-700">
-                <Link href="/products">Continue Shopping</Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/account/orders">View Orders</Link>
-              </Button>
+              <Link href="/products">
+                <Button className="w-full bg-violet-600 hover:bg-violet-700">
+                  Continue Shopping
+                </Button>
+              </Link>
+              <Link href="/account/orders">
+                <Button variant="outline" className="w-full">
+                  View Orders
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

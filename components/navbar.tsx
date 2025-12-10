@@ -13,6 +13,7 @@ const navItems = [
   { name: "Laptops", href: "/products?category=Laptops" },
   { name: "Networking", href: "/products?category=Networking" },
   { name: "Security", href: "/products?category=Security" },
+  { name: "Services", href: "/services" },
   { name: "Deals", href: "/deals" },
   { name: "Support", href: "/support" },
 ]
@@ -21,6 +22,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [searchOpen, setSearchOpen] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [scrolled, setScrolled] = React.useState(false)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const itemCount = useCartStore((state) => state.getItemCount())
@@ -28,6 +30,13 @@ export function Navbar() {
 
   React.useEffect(() => {
     setMounted(true)
+    
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   const handleSearch = (e: React.FormEvent) => {
@@ -40,58 +49,74 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+      scrolled 
+        ? 'border-border/60 bg-background/98 backdrop-blur-xl shadow-lg shadow-brand-teal-medium/5' 
+        : 'border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'
+    }`}>
       {/* Top bar */}
-      <div className="bg-violet-600 text-white py-1.5 text-xs">
-        <div className="container flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <a href="tel:+263242123456" className="flex items-center gap-1 hover:underline">
-              <Phone className="h-3 w-3" />
-              +263 242 123 456
+      <div className={`bg-gradient-to-r from-brand-teal-dark via-brand-teal-medium to-brand-teal-dark text-white transition-all duration-300 relative overflow-hidden ${
+        scrolled ? 'py-1 text-[10px]' : 'py-2 text-xs'
+      }`}>
+        {/* Animated background shimmer */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-10">
+          <div className="flex items-center gap-6">
+            <a href="tel:+263788663313" className="flex items-center gap-1.5 hover:text-brand-golden transition-all group">
+              <Phone className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
+              <span className="font-medium">+263 788 663 313</span>
             </a>
-            <span className="hidden sm:inline">Free delivery on orders over $500</span>
+            <span className="hidden sm:inline text-white/90">🚚 Free delivery in Harare</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/support" className="hover:underline">Help</Link>
-            <Link href="/account" className="hover:underline">Track Order</Link>
+          <div className="flex items-center gap-6 text-xs">
+            <Link href="/support" className="hover:text-brand-golden transition-colors font-medium">💬 Help</Link>
+            <Link href="/account" className="hover:text-brand-golden transition-colors font-medium">📦 Track Order</Link>
           </div>
         </div>
       </div>
 
-      <nav className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">Ⓐ</span>
+      <nav className="max-w-7xl mx-auto px-6 flex h-20 items-center justify-between">
+        <Link href="/" className="flex items-center space-x-3 group">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-brand-teal-medium/50 transition-all duration-300 group-hover:scale-105 overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal-medium to-brand-golden p-2">
+              <img 
+                src="/digital-solutions-logo.png" 
+                alt="Algol Digital Solutions" 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand-teal-medium to-brand-golden opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold leading-none">Algol Digital</span>
-            <span className="text-[10px] text-muted-foreground">IT Hardware & Software</span>
+            <span className="text-xl font-bold leading-none bg-gradient-to-r from-brand-teal-dark to-brand-teal-medium bg-clip-text text-transparent">Algol Digital</span>
+            <span className="text-xs text-muted-foreground font-medium mt-0.5">Premium IT Solutions</span>
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center space-x-6">
+        <div className="hidden lg:flex items-center space-x-1">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-muted-foreground hover:text-violet-600 transition-colors"
+              className="relative px-4 py-2 text-sm font-medium text-muted-foreground hover:text-brand-teal-dark transition-all duration-300 group"
             >
               {item.name}
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-brand-teal-medium to-brand-golden group-hover:w-3/4 transition-all duration-300 rounded-full" />
             </Link>
           ))}
         </div>
 
         {/* Search Bar - Desktop */}
         <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
-          <form onSubmit={handleSearch} className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <form onSubmit={handleSearch} className="relative w-full group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-brand-teal-medium transition-colors" />
             <input
               type="search"
-              placeholder="Search products..."
+              placeholder="Search products, categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+              className="w-full pl-12 pr-4 py-3 text-sm rounded-xl border-2 border-border bg-background/50 backdrop-blur-sm focus:outline-none focus:border-brand-teal-medium focus:bg-background transition-all duration-300 placeholder:text-muted-foreground/60"
             />
           </form>
         </div>
@@ -121,23 +146,23 @@ export function Navbar() {
           )}
 
           {/* Account */}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/account" aria-label="Account">
+          <Link href="/account" aria-label="Account">
+            <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
           {/* Cart */}
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/cart" aria-label="Shopping cart">
+          <Link href="/cart" aria-label="Shopping cart" className="relative">
+            <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               {mounted && itemCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button

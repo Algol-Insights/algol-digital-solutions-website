@@ -174,9 +174,11 @@ export default function ProductDetailPage() {
                   </>
                 )}
               </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/cart">View Cart</Link>
-              </Button>
+              <Link href="/cart">
+                <Button variant="outline" size="lg">
+                  View Cart
+                </Button>
+              </Link>
             </div>
 
             {/* Features */}

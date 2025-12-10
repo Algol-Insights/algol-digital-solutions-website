@@ -312,21 +312,16 @@ export function AdvancedSearch() {
 
                 {/* View All Results */}
                 <div className="border-t border-gray-200 p-4">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="w-full border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white"
+                  <Link
+                    href={`/products?search=${encodeURIComponent(query)}`}
+                    onClick={() => {
+                      saveRecentSearch(query)
+                      setIsOpen(false)
+                    }}
+                    className="w-full inline-flex items-center justify-center h-10 px-4 py-2 rounded-md border border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white transition-colors font-medium text-sm"
                   >
-                    <Link
-                      href={`/products?search=${encodeURIComponent(query)}`}
-                      onClick={() => {
-                        saveRecentSearch(query)
-                        setIsOpen(false)
-                      }}
-                    >
                       View All Results for "{query}"
-                    </Link>
-                  </Button>
+                  </Link>
                 </div>
               </div>
             )}
@@ -339,16 +334,13 @@ export function AdvancedSearch() {
                 <p className="text-sm text-gray-600">
                   Try adjusting your search terms or browse our categories
                 </p>
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="mt-4"
+                <Link 
+                  href="/products" 
+                  onClick={() => setIsOpen(false)}
+                  className="mt-4 inline-flex items-center justify-center h-9 px-3 rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground text-sm font-medium transition-colors"
                 >
-                  <Link href="/products" onClick={() => setIsOpen(false)}>
-                    Browse All Products
-                  </Link>
-                </Button>
+                  Browse All Products
+                </Link>
               </div>
             )}
           </motion.div>

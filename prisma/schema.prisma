@@ -157,3 +157,19 @@ enum PaymentStatus {
   FAILED
   REFUNDED
 }
+
+// Contact Inquiry model
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  service   String?
+  status    String   @default("NEW") // NEW, RESPONDED, CLOSED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_inquiries")
+}

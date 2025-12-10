@@ -304,17 +304,16 @@ export function HotDealsSection() {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-          <Button
-            asChild
-            size="lg"
-            variant="outline"
-            className="border-2 border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white font-semibold"
-          >
-            <Link href="/deals">
+          <Link href="/deals">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white font-semibold"
+            >
               View All Deals
               <TrendingUp className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </motion.div>
       </div>
     </section>

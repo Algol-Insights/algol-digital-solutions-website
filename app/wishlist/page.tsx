@@ -43,9 +43,11 @@ export default function WishlistPage() {
           <p className="text-muted-foreground mb-8">
             Save items you love by clicking the heart icon on any product.
           </p>
-          <Button asChild className="bg-violet-600 hover:bg-violet-700">
-            <Link href="/products">Browse Products</Link>
-          </Button>
+          <Link href="/products">
+            <Button className="bg-violet-600 hover:bg-violet-700">
+              Browse Products
+            </Button>
+          </Link>
         </div>
       </div>
     )

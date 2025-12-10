@@ -22,12 +22,12 @@ export default function CartPage() {
               Looks like you haven&apos;t added any items to your cart yet. 
               Start shopping to fill it up!
             </p>
-            <Button asChild className="bg-violet-600 hover:bg-violet-700">
-              <Link href="/products">
+            <Link href="/products">
+              <Button className="bg-violet-600 hover:bg-violet-700">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Continue Shopping
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -172,12 +172,12 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <Button asChild className="w-full bg-violet-600 hover:bg-violet-700" size="lg">
-                <Link href="/checkout">
+              <Link href="/checkout">
+                <Button className="w-full bg-violet-600 hover:bg-violet-700" size="lg">
                   Proceed to Checkout
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
 
               {/* Payment Methods */}
               <div className="mt-6 pt-6 border-t border-border">

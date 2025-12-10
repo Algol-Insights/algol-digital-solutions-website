@@ -149,15 +149,14 @@ function WishlistCard({ item }: { item: WishlistItem }) {
               <ShoppingCart className="mr-2 h-4 w-4" />
               {item.inStock ? "Add to Cart" : "Unavailable"}
             </Button>
-            <Button
-              variant="outline"
-              className="border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white"
-              asChild
-            >
-              <Link href={`/products/${item.id}`}>
+            <Link href={`/products/${item.id}`}>
+              <Button
+                variant="outline"
+                className="border-brand-teal-dark text-brand-teal-dark hover:bg-brand-teal-dark hover:text-white"
+              >
                 View
-              </Link>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -180,15 +179,14 @@ export function WishlistPage() {
           <p className="text-gray-600">
             Start adding products you love to your wishlist and we'll notify you of price drops!
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="bg-brand-teal-dark hover:bg-brand-teal-medium text-white font-semibold"
-          >
-            <Link href="/products">
+          <Link href="/products">
+            <Button
+              size="lg"
+              className="bg-brand-teal-dark hover:bg-brand-teal-medium text-white font-semibold"
+            >
               Browse Products
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </div>
     )

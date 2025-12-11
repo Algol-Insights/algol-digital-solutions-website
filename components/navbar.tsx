@@ -56,29 +56,29 @@ export function Navbar() {
     }`}>
       {/* Top bar */}
       <div className={`bg-gradient-to-r from-brand-teal-dark via-brand-teal-medium to-brand-teal-dark text-white transition-all duration-300 relative overflow-hidden ${
-        scrolled ? 'py-1 text-[10px]' : 'py-2 text-xs'
+        scrolled ? 'py-1 text-[10px]' : 'py-1.5 md:py-2 text-[10px] md:text-xs'
       }`}>
         {/* Animated background shimmer */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-6">
-            <a href="tel:+263788663313" className="flex items-center gap-1.5 hover:text-brand-golden transition-all group">
-              <Phone className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">+263 788 663 313</span>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex justify-between items-center relative z-10">
+          <div className="flex items-center gap-3 md:gap-6">
+            <a href="tel:+263788663313" className="flex items-center gap-1 md:gap-1.5 hover:text-brand-golden transition-all group">
+              <Phone className="h-3 w-3 md:h-3.5 md:w-3.5 group-hover:scale-110 transition-transform" />
+              <span className="font-medium text-[10px] md:text-xs">+263 788 663 313</span>
             </a>
-            <span className="hidden sm:inline text-white/90">🚚 Free delivery in Harare</span>
+            <span className="hidden sm:inline text-white/90 text-[10px] md:text-xs">🚚 Free delivery in Harare</span>
           </div>
-          <div className="flex items-center gap-6 text-xs">
-            <Link href="/support" className="hover:text-brand-golden transition-colors font-medium">💬 Help</Link>
-            <Link href="/account" className="hover:text-brand-golden transition-colors font-medium">📦 Track Order</Link>
+          <div className="flex items-center gap-3 md:gap-6 text-[10px] md:text-xs">
+            <Link href="/support" className="hover:text-brand-golden transition-colors font-medium hidden sm:inline">💬 Help</Link>
+            <Link href="/account" className="hover:text-brand-golden transition-colors font-medium">📦 Track</Link>
           </div>
         </div>
       </div>
 
-      <nav className="max-w-7xl mx-auto px-6 flex h-20 items-center justify-between">
-        <Link href="/" className="flex items-center space-x-3 group">
+      <nav className="max-w-7xl mx-auto px-4 md:px-6 flex h-16 md:h-20 items-center justify-between gap-2 md:gap-4">
+        <Link href="/" className="flex items-center space-x-2 md:space-x-3 group flex-shrink-0">
           <div className="relative">
-            <div className="w-24 h-24 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-brand-teal-medium/50 transition-all duration-300 group-hover:scale-105 overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal-medium to-brand-golden p-2">
+            <div className="w-14 h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-brand-teal-medium/50 transition-all duration-300 group-hover:scale-105 overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal-medium to-brand-golden p-1.5 md:p-2">
               <img 
                 src="/digital-solutions-logo.png" 
                 alt="Algol Digital Solutions" 
@@ -88,8 +88,8 @@ export function Navbar() {
             <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand-teal-medium to-brand-golden opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold leading-none bg-gradient-to-r from-brand-teal-dark to-brand-teal-medium bg-clip-text text-transparent">Algol Digital</span>
-            <span className="text-xs text-muted-foreground font-medium mt-0.5">Premium IT Solutions</span>
+            <span className="text-base md:text-lg lg:text-xl font-bold leading-none bg-gradient-to-r from-brand-teal-dark to-brand-teal-medium bg-clip-text text-transparent">Algol Digital</span>
+            <span className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5">Premium IT Solutions</span>
           </div>
         </Link>
 

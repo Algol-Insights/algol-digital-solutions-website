@@ -75,21 +75,21 @@ export function Navbar() {
         </div>
       </div>
 
-      <nav className="max-w-7xl mx-auto px-4 md:px-6 flex h-16 md:h-20 items-center justify-between gap-2 md:gap-4">
-        <Link href="/" className="flex items-center space-x-2 md:space-x-3 group flex-shrink-0">
+      <nav className="max-w-7xl mx-auto px-3 md:px-6 flex h-16 md:h-20 items-center justify-between gap-1">
+        <Link href="/" className="flex items-center space-x-1.5 md:space-x-3 group flex-shrink-0">
           <div className="relative">
-            <div className="w-14 h-14 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-brand-teal-medium/50 transition-all duration-300 group-hover:scale-105 overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal-medium to-brand-golden p-1.5 md:p-2">
+            <div className="w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:shadow-brand-teal-medium/50 transition-all duration-300 group-hover:scale-105 overflow-hidden bg-gradient-to-br from-brand-teal-dark via-brand-teal-medium to-brand-golden p-1.5 md:p-2">
               <img 
                 src="/digital-solutions-logo.png" 
                 alt="Algol Digital Solutions" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-brand-teal-medium to-brand-golden opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
+            <div className="absolute inset-0 rounded-lg md:rounded-xl bg-gradient-to-br from-brand-teal-medium to-brand-golden opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base md:text-lg lg:text-xl font-bold leading-none bg-gradient-to-r from-brand-teal-dark to-brand-teal-medium bg-clip-text text-transparent">Algol Digital</span>
-            <span className="text-[10px] md:text-xs text-muted-foreground font-medium mt-0.5">Premium IT Solutions</span>
+            <span className="text-sm md:text-lg lg:text-xl font-bold leading-none bg-gradient-to-r from-brand-teal-dark to-brand-teal-medium bg-clip-text text-transparent">Algol Digital</span>
+            <span className="text-[9px] md:text-xs text-muted-foreground font-medium mt-0.5 hidden sm:block">Premium IT Solutions</span>
           </div>
         </Link>
 
@@ -121,16 +121,16 @@ export function Navbar() {
           </form>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-0.5 md:space-x-2">
           {/* Search Toggle - Mobile */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden h-9 w-9"
             onClick={() => setSearchOpen(!searchOpen)}
             aria-label="Search"
           >
-            <Search className="h-5 w-5" />
+            <Search className="h-4 w-4" />
           </Button>
 
           {/* Theme Toggle */}
@@ -138,26 +138,27 @@ export function Navbar() {
             <Button
               variant="ghost"
               size="icon"
+              className="h-9 w-9 md:h-10 md:w-10"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === "dark" ? <Sun className="h-4 w-4 md:h-5 md:w-5" /> : <Moon className="h-4 w-4 md:h-5 md:w-5" />}
             </Button>
           )}
 
-          {/* Account */}
-          <Link href="/account" aria-label="Account">
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
+          {/* Account - Hidden on small mobile */}
+          <Link href="/account" aria-label="Account" className="hidden sm:inline-block">
+            <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10">
+              <User className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </Link>
 
           {/* Cart */}
           <Link href="/cart" aria-label="Shopping cart" className="relative">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
+              <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
               {mounted && itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 md:h-5 md:w-5 rounded-full bg-violet-600 text-white text-[10px] md:text-xs flex items-center justify-center font-bold">
                   {itemCount > 9 ? "9+" : itemCount}
                 </span>
               )}
@@ -166,11 +167,11 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden p-2"
+            className="lg:hidden p-1.5 md:p-2"
             onClick={() => setIsOpen(!isOpen)}
             aria-label="Toggle menu"
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isOpen ? <X className="h-5 w-5 md:h-6 md:w-6" /> : <Menu className="h-5 w-5 md:h-6 md:w-6" />}
           </button>
         </div>
       </nav>

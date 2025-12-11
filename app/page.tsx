@@ -79,8 +79,51 @@ export default function HomePage() {
       {/* MEGA MENU NAVIGATION */}
       <MegaMenu />
 
+      {/* MOBILE CATEGORY SCROLL */}
+      <section className="md:hidden bg-white border-b border-gray-200">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <Link 
+              href="/products"
+              className="flex items-center gap-2 px-4 py-2 bg-brand-teal-medium text-white rounded-full text-sm font-medium whitespace-nowrap shadow-md flex-shrink-0"
+            >
+              <Search className="h-4 w-4" />
+              All Products
+            </Link>
+            <Link 
+              href="/products?category=laptops"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 flex-shrink-0"
+            >
+              <Laptop className="h-4 w-4" />
+              Laptops
+            </Link>
+            <Link 
+              href="/products?category=security"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 flex-shrink-0"
+            >
+              <Lock className="h-4 w-4" />
+              Security
+            </Link>
+            <Link 
+              href="/products?category=networking"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-200 flex-shrink-0"
+            >
+              <Server className="h-4 w-4" />
+              Networking
+            </Link>
+            <Link 
+              href="/deals"
+              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-bold whitespace-nowrap hover:bg-red-100 flex-shrink-0"
+            >
+              <Sparkles className="h-4 w-4" />
+              Hot Deals
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ADVANCED SEARCH BAR SECTION */}
-      <section className="py-8 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 relative">
+      <section className="py-6 md:py-8 bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 relative">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -89,14 +132,14 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="flex items-center justify-center gap-2 mb-4 md:mb-6">
               <motion.div
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <Search className="h-6 w-6 text-brand-teal-medium" />
+                <Search className="h-5 w-5 md:h-6 md:w-6 text-brand-teal-medium" />
               </motion.div>
-              <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-teal-dark to-brand-golden">
+              <h2 className="text-lg md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-teal-dark to-brand-golden">
                 Find Your Perfect Product
               </h2>
             </div>

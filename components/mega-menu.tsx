@@ -147,18 +147,19 @@ export function MegaMenu() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
 
   return (
-    <nav className="relative bg-white border-b border-gray-200">
+    <nav className="relative bg-white border-b border-gray-200 hidden md:block">
       <div className="container mx-auto px-4">
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 lg:gap-8 overflow-x-auto scrollbar-hide">
           {/* All Categories Button */}
           <div
-            className="relative py-4 cursor-pointer group"
+            className="relative py-4 cursor-pointer group flex-shrink-0"
             onMouseEnter={() => setActiveCategory("all")}
             onMouseLeave={() => setActiveCategory(null)}
           >
-            <div className="flex items-center gap-2 font-semibold text-gray-700 hover:text-brand-teal-medium transition-colors">
+            <div className="flex items-center gap-2 font-semibold text-gray-700 hover:text-brand-teal-medium transition-colors whitespace-nowrap">
               <Package className="h-5 w-5" />
-              All Categories
+              <span className="hidden lg:inline">All Categories</span>
+              <span className="lg:hidden">All</span>
               <ChevronDown className="h-4 w-4 transition-transform group-hover:rotate-180" />
             </div>
           </div>
@@ -167,13 +168,13 @@ export function MegaMenu() {
           {categories.map((category) => (
             <div
               key={category.name}
-              className="relative py-4 cursor-pointer group"
+              className="relative py-4 cursor-pointer group flex-shrink-0"
               onMouseEnter={() => setActiveCategory(category.name)}
               onMouseLeave={() => setActiveCategory(null)}
             >
               <Link
                 href={category.href}
-                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-brand-teal-medium transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-brand-teal-medium transition-colors whitespace-nowrap"
               >
                 <category.icon className="h-4 w-4" />
                 {category.name}
@@ -185,7 +186,7 @@ export function MegaMenu() {
           {/* Hot Deals Link */}
           <Link
             href="/deals"
-            className="flex items-center gap-2 py-4 text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+            className="flex items-center gap-2 py-4 text-sm font-bold text-red-600 hover:text-red-700 transition-colors flex-shrink-0 whitespace-nowrap"
           >
             <Zap className="h-4 w-4" />
             Hot Deals

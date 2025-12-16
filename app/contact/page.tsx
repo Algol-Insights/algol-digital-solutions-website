@@ -19,7 +19,7 @@ export default function ContactPage() {
   const services = [
     'General Inquiry',
     'IT Hardware & Software',
-    'Microsoft 365 Services',
+    'Cloud Productivity Services (Microsoft 365 / Google Workspace)',
     'Network Security & Firewalls',
     'CCTV Surveillance',
     'Network Installation',

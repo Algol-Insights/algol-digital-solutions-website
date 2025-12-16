@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui-lib"
 import { 
   ArrowLeft, 
@@ -23,32 +24,41 @@ type PaymentMethod = "ecocash" | "bank" | "cod"
 type DeliveryOption = "standard" | "express" | "pickup"
 
 const deliveryOptions = [
-  { id: "standard", name: "Standard Delivery", description: "3-5 business days", price: 25 },
-  { id: "express", name: "Express Delivery", description: "1-2 business days", price: 50 },
+  { id: "standard", name: "Harare Delivery", description: "1 day delivery", price: 0 },
+  { id: "express", name: "Other Cities/Provinces", description: "1-3 days delivery", price: 10 },
   { id: "pickup", name: "Store Pickup", description: "Ready in 24 hours", price: 0 },
 ]
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const { items, getTotal, clearCart } = useCartStore()
+  const [isMounted, setIsMounted] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
+  const [orderNumber, setOrderNumber] = useState<string>("")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("ecocash")
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>("standard")
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
+    email: session?.user?.email || "",
     phone: "",
     address: "",
     city: "",
     province: "",
     notes: "",
   })
+  
+  // Ensure component is mounted before accessing client-side APIs
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const subtotal = getTotal()
   const selectedDelivery = deliveryOptions.find(d => d.id === deliveryOption)!
   const shipping = subtotal > 500 && deliveryOption === "standard" ? 0 : selectedDelivery.price
+  const tax = 0
   const total = subtotal + shipping
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -62,17 +72,71 @@ export default function CheckoutPage() {
     e.preventDefault()
     setIsProcessing(true)
 
-    // Simulate order processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    try {
+      // Create order via API
+      const orderData = {
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        items: items.map(item => ({
+          productId: String(item.id),
+          variantId: item.variantId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal,
+        tax,
+        shipping: selectedDelivery.price,
+        shippingAddress: {
+          addressLine1: formData.address,
+          city: formData.city,
+          state: formData.province,
+          postalCode: "",
+          country: "Zimbabwe",
+        },
+        paymentMethod,
+        notes: formData.notes,
+      };
 
-    setIsProcessing(false)
-    setOrderComplete(true)
-    clearCart()
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+
+      const result = await response.json();
+      setOrderNumber(result.orderNumber);
+      setOrderComplete(true);
+      clearCart();
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
   }
 
-  if (items.length === 0 && !orderComplete) {
-    router.push("/cart")
-    return null
+  // Redirect to cart if empty (only after mount to avoid SSR issues)
+  useEffect(() => {
+    if (isMounted && items.length === 0 && !orderComplete) {
+      router.push("/cart")
+    }
+  }, [isMounted, items.length, orderComplete, router])
+
+  // Show loading while not mounted or redirecting
+  if (!isMounted || (items.length === 0 && !orderComplete)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-violet-600" />
+      </div>
+    )
   }
 
   if (orderComplete) {
@@ -89,17 +153,19 @@ export default function CheckoutPage() {
               <span className="font-medium text-foreground">{formData.email}</span>
             </p>
             <p className="text-sm text-muted-foreground mb-8">
-              Order ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}
+              Order ID: #{orderNumber}
             </p>
             <div className="space-y-3">
+              {session && (
+                <Link href="/order-tracking">
+                  <Button className="w-full bg-violet-600 hover:bg-violet-700">
+                    View My Orders
+                  </Button>
+                </Link>
+              )}
               <Link href="/products">
-                <Button className="w-full bg-violet-600 hover:bg-violet-700">
-                  Continue Shopping
-                </Button>
-              </Link>
-              <Link href="/account/orders">
                 <Button variant="outline" className="w-full">
-                  View Orders
+                  Continue Shopping
                 </Button>
               </Link>
             </div>

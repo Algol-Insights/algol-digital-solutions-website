@@ -30,9 +30,10 @@ async function main() {
 
   // Seed products
   for (const product of products) {
-    const categoryId = categoryMap.get(product.category)
+    const categoryKey = typeof product.category === 'string' ? product.category : product.category?.name
+    const categoryId = categoryKey ? categoryMap.get(categoryKey) : undefined
     if (!categoryId) {
-      console.warn(`Skipping product ${product.name}: missing category ${product.category}`)
+      console.warn(`Skipping product ${product.name}: missing category ${categoryKey}`)
       continue
     }
 

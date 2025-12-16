@@ -141,34 +141,7 @@ export function TestimonialsSection() {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto"
-        >
-          {[
-            { value: "2000+", label: "Happy Customers" },
-            { value: "5000+", label: "Products Delivered" },
-            { value: "20+", label: "Years Experience" },
-            { value: "24/7", label: "Support Available" }
-          ].map((stat, index) => (
-            <motion.div
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              className="text-center p-6 bg-white dark:bg-slate-800 rounded-xl border border-border hover:border-brand-teal-medium/50 shadow-md hover:shadow-xl transition-all"
-            >
-              <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-teal-dark to-brand-golden mb-2">
-                {stat.value}
-              </div>
-              <div className="text-sm text-muted-foreground font-medium">
-                {stat.label}
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+        {/* Removed stats section under customer confessions as requested */}
       </div>
     </section>
   )

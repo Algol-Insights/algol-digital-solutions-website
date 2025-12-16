@@ -78,6 +78,70 @@ export default function AdminDashboard() {
               </Button>
             </div>
           </Link>
+
+          {/* Stock Alerts Management */}
+          <Link href="/admin/stock-alerts" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-teal-500 hover:shadow-lg hover:shadow-teal-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center group-hover:bg-teal-500/30 transition">
+                  <span className="text-2xl">🔔</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Stock Alerts</h2>
+              <p className="text-slate-400 mb-4">Manage customer stock alerts and notifications</p>
+              <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                Manage Alerts →
+              </Button>
+            </div>
+          </Link>
+
+          {/* Security Settings */}
+          <Link href="/admin/security" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-red-500 hover:shadow-lg hover:shadow-red-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center group-hover:bg-red-500/30 transition">
+                  <span className="text-2xl">🔒</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Security</h2>
+              <p className="text-slate-400 mb-4">Configure two-factor authentication and security settings</p>
+              <Button className="w-full bg-red-600 hover:bg-red-700">
+                Security Settings →
+              </Button>
+            </div>
+          </Link>
+
+          {/* Coupons Management */}
+          <Link href="/admin/coupons" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-yellow-500 hover:shadow-lg hover:shadow-yellow-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center group-hover:bg-yellow-500/30 transition">
+                  <span className="text-2xl">🎟️</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Coupons</h2>
+              <p className="text-slate-400 mb-4">Create and manage discount coupons and promotions</p>
+              <Button className="w-full bg-yellow-600 hover:bg-yellow-700">
+                Manage Coupons →
+              </Button>
+            </div>
+          </Link>
+
+          {/* Analytics Dashboard */}
+          <Link href="/admin/analytics" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center group-hover:bg-indigo-500/30 transition">
+                  <span className="text-2xl">📈</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Analytics</h2>
+              <p className="text-slate-400 mb-4">View sales reports, customer insights, and metrics</p>
+              <Button className="w-full bg-indigo-600 hover:bg-indigo-700">
+                View Analytics →
+              </Button>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

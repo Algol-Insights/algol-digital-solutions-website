@@ -61,8 +61,9 @@ const services: Service[] = [
   {
     id: 'microsoft-365',
     icon: Cloud,
-    title: 'Microsoft 365 & Cloud Services',
-    description: 'Authorized Microsoft 365 reseller providing cloud productivity solutions for individuals and businesses. Get Office apps, cloud storage, and collaboration tools.',
+    title: 'Cloud Productivity Services',
+    description: 'Multi-cloud productivity solutions for individuals and businesses. Microsoft 365 and Google Workspace - Office apps, cloud storage, Teams, Gmail, and collaboration tools.',
+
     features: [
       'Microsoft 365 Business Basic, Standard & Premium',
       'Office Apps (Word, Excel, PowerPoint, Outlook)',
@@ -79,8 +80,8 @@ const services: Service[] = [
       'Ongoing technical support'
     ],
     pricing: 'From $5/user/month',
-    cta: 'Get Microsoft 365',
-    ctaLink: '/contact'
+    cta: 'View Plans & Pricing',
+    ctaLink: '/services/microsoft-365'
   },
   {
     id: 'network-security',
@@ -103,8 +104,8 @@ const services: Service[] = [
       '24/7 monitoring available'
     ],
     pricing: 'From $750',
-    cta: 'Secure Your Network',
-    ctaLink: '/contact'
+    cta: 'View Security Packages',
+    ctaLink: '/services/network-security'
   },
   {
     id: 'cctv-surveillance',
@@ -127,8 +128,8 @@ const services: Service[] = [
       'Integration with alarms'
     ],
     pricing: 'From $600',
-    cta: 'Get a Quote',
-    ctaLink: '/contact'
+    cta: 'View CCTV Packages',
+    ctaLink: '/services/cctv-systems'
   },
   {
     id: 'network-installation',
@@ -151,8 +152,8 @@ const services: Service[] = [
       'Future-proof design'
     ],
     pricing: 'From $200',
-    cta: 'Plan Your Network',
-    ctaLink: '/contact'
+    cta: 'View Network Packages',
+    ctaLink: '/services/network-installation'
   },
   {
     id: 'it-support',
@@ -175,8 +176,8 @@ const services: Service[] = [
       'Monthly retainer options'
     ],
     pricing: 'From $50/visit or $100/month',
-    cta: 'Get Support',
-    ctaLink: '/support'
+    cta: 'View Support Plans',
+    ctaLink: '/services/it-support'
   },
   {
     id: 'training-consultancy',
@@ -223,8 +224,8 @@ const services: Service[] = [
       'Ongoing support included'
     ],
     pricing: 'From $500',
-    cta: 'Start Your Project',
-    ctaLink: '/contact'
+    cta: 'View Packages & Pricing',
+    ctaLink: '/services/web-development'
   },
   {
     id: 'software-development',
@@ -247,8 +248,8 @@ const services: Service[] = [
       'Competitive advantage'
     ],
     pricing: 'From $2,000',
-    cta: 'Discuss Your Idea',
-    ctaLink: '/contact'
+    cta: 'View Packages & Pricing',
+    ctaLink: '/services/software-development'
   },
   {
     id: 'corporate-solutions',

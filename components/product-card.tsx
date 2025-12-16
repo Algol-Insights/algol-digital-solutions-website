@@ -2,12 +2,13 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui-lib"
-import { ShoppingCart, Check, Heart, Eye, Star, TrendingUp } from "lucide-react"
+import { ShoppingCart, Heart, Eye, Star, TrendingUp, Check } from "lucide-react"
 import type { Product } from "@/lib/cart-store"
-import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import { useCartStore } from "@/lib/cart-store"
+import { QuickViewModal } from "@/components/quick-view-modal"
 import * as React from "react"
 
 interface ProductCardProps {
@@ -16,10 +17,11 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const [added, setAdded] = React.useState(false)
   const [isHovered, setIsHovered] = React.useState(false)
-  const addItem = useCartStore((state) => state.addItem)
+  const [showQuickView, setShowQuickView] = React.useState(false)
+  const [added, setAdded] = React.useState(false)
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlistStore()
+  const { addItem } = useCartStore()
   const inWishlist = isInWishlist(product.id)
   
   // 3D tilt effect
@@ -48,22 +50,28 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     setIsHovered(false)
   }
 
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    addItem(product)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 2000)
-  }
-
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     if (inWishlist) {
       removeFromWishlist(product.id)
     } else {
-      addToWishlist(product)
+      addToWishlist({ ...product, inStock: product.inStock ?? true } as any)
     }
+  }
+
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setShowQuickView(true)
+  }
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addItem(product)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
   }
 
   const discount = product.originalPrice
@@ -151,6 +159,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={handleQuickView}
                 className="p-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-white/20 text-slate-700 dark:text-slate-200 hover:bg-brand-teal-medium hover:text-white shadow-lg transition-colors"
               >
                 <Eye className="h-4 w-4" />
@@ -230,28 +239,34 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
               <Button
                 onClick={handleAddToCart}
                 disabled={!product.inStock || added}
-                className={`w-full font-bold shadow-lg transition-all duration-300 ${
-                  added
-                    ? "bg-green-600 hover:bg-green-600 shadow-green-500/50"
-                    : "bg-gradient-to-r from-brand-teal-medium to-brand-teal-dark hover:from-brand-teal-dark hover:to-brand-teal-medium shadow-brand-teal-medium/30"
-                }`}
+                className="w-full font-bold shadow-lg transition-all duration-300 bg-gradient-to-r from-brand-teal-medium to-brand-teal-dark hover:from-brand-teal-dark hover:to-brand-teal-medium shadow-brand-teal-medium/30 relative overflow-hidden"
                 size="lg"
               >
-                {added ? (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="flex items-center gap-2"
-                  >
-                    <Check className="h-5 w-5" />
-                    Added to Cart!
-                  </motion.div>
-                ) : (
-                  <div className="flex items-center gap-2 group/btn">
-                    <ShoppingCart className="h-5 w-5 group-hover/btn:animate-bounce" />
-                    Add to Cart
-                  </div>
-                )}
+                <AnimatePresence mode="wait">
+                  {added ? (
+                    <motion.div
+                      key="added"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Check className="h-5 w-5" />
+                      Added to Cart!
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="add"
+                      initial={{ scale: 1, opacity: 1 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="flex items-center gap-2 group/btn"
+                    >
+                      <ShoppingCart className="h-5 w-5 group-hover/btn:animate-bounce" />
+                      Add to Cart
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Button>
             </motion.div>
           </div>
@@ -260,6 +275,13 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 pointer-events-none" />
         </motion.div>
       </Link>
+
+      {/* Quick View Modal */}
+      <QuickViewModal
+        product={product}
+        isOpen={showQuickView}
+        onClose={() => setShowQuickView(false)}
+      />
     </motion.div>
   )
 }

@@ -77,7 +77,7 @@ const metrics = [
   { label: "Successful Projects", value: "150+", icon: Trophy },
   { label: "Client Satisfaction", value: "98%", icon: Star },
   { label: "Team Experts", value: "50+", icon: Users },
-  { label: "Years Experience", value: "10+", icon: Target },
+  { label: "Years Experience", value: "5+", icon: Target },
 ]
 
 export default function PortfolioPage() {

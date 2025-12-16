@@ -3,10 +3,13 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+// Category can be a string or object with category details
+type Category = string | { id: string; name: string; slug: string }
+
 export interface WishlistItem {
   id: string | number
   name: string
-  category: string
+  category: Category
   price: number
   originalPrice?: number
   rating?: number
@@ -19,6 +22,10 @@ export interface WishlistItem {
 
 interface WishlistStore {
   items: WishlistItem[]
+  wishlistCount: number
+  setWishlistCount: (count: number) => void
+  incrementCount: () => void
+  decrementCount: () => void
   addItem: (item: Omit<WishlistItem, "addedAt" | "priceHistory">) => void
   removeItem: (id: string | number) => void
   addToWishlist: (item: Omit<WishlistItem, "addedAt" | "priceHistory">) => void
@@ -33,6 +40,19 @@ export const useWishlistStore = create<WishlistStore>()(
   persist(
     (set, get) => ({
       items: [],
+      wishlistCount: 0,
+
+      setWishlistCount: (count) => {
+        set({ wishlistCount: count })
+      },
+
+      incrementCount: () => {
+        set((state) => ({ wishlistCount: state.wishlistCount + 1 }))
+      },
+
+      decrementCount: () => {
+        set((state) => ({ wishlistCount: Math.max(0, state.wishlistCount - 1) }))
+      },
 
       addItem: (item) => {
         const existingItem = get().items.find((i) => i.id === item.id)

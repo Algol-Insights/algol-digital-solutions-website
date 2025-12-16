@@ -3,24 +3,44 @@ import { persist } from "zustand/middleware"
 
 export interface Product {
   id: string
+  variantId?: string | null
   name: string
-  description: string
+  description?: string
   price: number
   originalPrice?: number
   image: string
-  category: string
-  brand: string
-  inStock: boolean
+  images?: string[]
+  category: string | { id: string; name: string; slug: string }
+  brand?: string
+  inStock?: boolean
   stock?: number
   rating?: number
   reviewCount?: number
   specs?: Record<string, string>
   featured?: boolean
   createdAt?: Date | string
+  variants?: ProductVariant[]
 }
 
 export interface CartItem extends Product {
   quantity: number
+}
+
+export interface ProductVariant {
+  id: string
+  productId?: string
+  sku?: string
+  name: string
+  color?: string | null
+  size?: string | null
+  storage?: string | null
+  price: number
+  originalPrice?: number | null
+  stock: number
+  inStock?: boolean
+  image?: string | null
+  sortOrder?: number
+  attributes?: Record<string, string>
 }
 
 interface CartStore {

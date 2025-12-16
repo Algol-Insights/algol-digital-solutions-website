@@ -13,6 +13,10 @@ export async function GET(
       where: { id },
       include: {
         category: true,
+        variants: {
+          where: { active: true },
+          orderBy: { sortOrder: "asc" },
+        },
         inventoryLogs: {
           take: 10,
           orderBy: { createdAt: "desc" },

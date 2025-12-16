@@ -1,9 +1,81 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db/prisma"
+import { sendOrderConfirmationEmail, sendShippingNotificationEmail } from "@/lib/email-notifications-v2"
 
 interface OrderItemInput {
   productId: string
   quantity: number
+}
+
+// GET /api/orders - Fetch all orders for the authenticated user
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please log in.' },
+        { status: 401 }
+      );
+    }
+
+    const userId = (session.user as any).id;
+
+    // Fetch orders for the user
+    const orders = await prisma.order.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                images: true,
+              },
+            },
+            variant: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+                size: true,
+                storage: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Calculate order statistics
+    const stats = {
+      total: orders.length,
+      pending: orders.filter((o) => o.status === 'PENDING').length,
+      processing: orders.filter((o) => o.status === 'PROCESSING').length,
+      shipped: orders.filter((o) => o.status === 'SHIPPED').length,
+      delivered: orders.filter((o) => o.status === 'DELIVERED').length,
+    };
+
+    return NextResponse.json({
+      orders,
+      stats,
+    });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch orders' },
+      { status: 500 }
+    );
+  }
 }
 
 // POST /api/orders - Create new order from cart
@@ -134,56 +206,40 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmationEmail(
+        customerEmail,
+        {
+          orderNumber: order.orderNumber,
+          orderId: order.id,
+          total: order.total,
+          subtotal: order.subtotal,
+          tax: order.tax,
+          shipping: order.shipping,
+          items: order.orderItems.map((item) => ({
+            name: item.product.name,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.product.image || undefined,
+          })),
+          shippingAddress: shippingAddress ? 
+            `${shippingAddress.addressLine1}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}\n${shippingAddress.country}` 
+            : undefined,
+          estimatedDelivery: order.estimatedDelivery || undefined,
+        }
+      )
+    } catch (emailError) {
+      console.error('Failed to send order confirmation email:', emailError)
+      // Don't fail the order if email fails
+    }
+
     return NextResponse.json(order, { status: 201 })
   } catch (error) {
     console.error("Error creating order:", error)
+    const errorMessage = error instanceof Error ? error.message : "Failed to create order"
     return NextResponse.json(
-      { error: "Failed to create order" },
-      { status: 500 }
-    )
-  }
-}
-
-// GET /api/orders - List orders (with optional filters)
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const email = searchParams.get("email")
-    const status = searchParams.get("status")
-    const page = parseInt(searchParams.get("page") || "1")
-    const limit = parseInt(searchParams.get("limit") || "10")
-
-    const where: any = {}
-    if (email) where.customer = { email }
-    if (status) where.status = status
-
-    const total = await prisma.order.count({ where })
-    const orders = await prisma.order.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        customer: true,
-        orderItems: {
-          include: { product: true },
-        },
-      },
-    })
-
-    return NextResponse.json({
-      data: orders,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching orders:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch orders" },
+      { error: errorMessage },
       { status: 500 }
     )
   }

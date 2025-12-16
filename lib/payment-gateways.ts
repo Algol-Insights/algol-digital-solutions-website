@@ -1,9 +1,9 @@
 /**
  * Multi-gateway payment integration
- * Supports: Ecocash, Banking Cards, Innbucks, Western Union, PayPal
+ * Supports: Stripe, Ecocash, Banking Cards, Innbucks, Western Union, PayPal
  */
 
-export type PaymentGateway = 'ecocash' | 'banking' | 'innbucks' | 'western-union' | 'paypal'
+export type PaymentGateway = 'stripe' | 'ecocash' | 'banking' | 'innbucks' | 'western-union' | 'paypal'
 
 export interface PaymentConfig {
   gateway: PaymentGateway
@@ -24,6 +24,7 @@ export interface PaymentResponse {
   status: 'pending' | 'completed' | 'failed'
   message: string
   redirectUrl?: string
+  metadata?: Record<string, any>
   timestamp: Date
 }
 
@@ -41,6 +42,17 @@ export interface PaymentGatewayProvider {
 
 // Gateway Configuration
 export const PAYMENT_GATEWAYS: Record<PaymentGateway, PaymentGatewayProvider> = {
+  stripe: {
+    gateway: 'stripe',
+    name: 'Stripe',
+    description: 'Credit/Debit cards via Stripe',
+    icon: '🎵',
+    processingTime: 'Instant',
+    fees: 2.9,
+    minAmount: 0.5,
+    maxAmount: 999999,
+    supported: true,
+  },
   ecocash: {
     gateway: 'ecocash',
     name: 'Ecocash',
@@ -133,6 +145,8 @@ export async function initiatePayment(config: PaymentConfig): Promise<PaymentRes
 
   // Route to appropriate gateway handler
   switch (config.gateway) {
+    case 'stripe':
+      return initiateStripePayment(config)
     case 'ecocash':
       return initiateEcocashPayment(config)
     case 'banking':
@@ -154,6 +168,62 @@ export async function initiatePayment(config: PaymentConfig): Promise<PaymentRes
         message: 'Unknown payment gateway',
         timestamp: new Date(),
       }
+  }
+}
+
+/**
+ * Stripe Payment Handler
+ * Integration with Stripe Payment Intents API
+ */
+async function initiateStripePayment(config: PaymentConfig): Promise<PaymentResponse> {
+  try {
+    // Create payment intent via backend API
+    const response = await fetch('/api/payments/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: config.amount,
+        currency: config.currency,
+        metadata: {
+          reference: config.reference,
+          customerName: config.customerName,
+          customerEmail: config.customerEmail,
+          ...config.metadata,
+        },
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to create payment intent')
+    }
+
+    const { clientSecret, paymentIntentId } = await response.json()
+
+    return {
+      success: true,
+      transactionId: paymentIntentId,
+      gateway: 'stripe',
+      amount: config.amount,
+      currency: config.currency,
+      status: 'pending',
+      message: 'Stripe payment initiated. Client secret for checkout.',
+      metadata: {
+        clientSecret,
+      },
+      timestamp: new Date(),
+    }
+  } catch (error) {
+    return {
+      success: false,
+      transactionId: '',
+      gateway: 'stripe',
+      amount: config.amount,
+      currency: config.currency,
+      status: 'failed',
+      message: `Stripe payment failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      timestamp: new Date(),
+    }
   }
 }
 

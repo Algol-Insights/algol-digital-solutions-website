@@ -683,7 +683,10 @@ export function getProductById(id: string): Product | undefined {
 }
 
 export function getProductsByCategory(category: string): Product[] {
-  return products.filter((p) => p.category.toLowerCase() === category.toLowerCase())
+  return products.filter((p) => {
+    const cat = typeof p.category === 'string' ? p.category : p.category?.name || ''
+    return cat.toLowerCase() === category.toLowerCase()
+  })
 }
 
 export function getFeaturedProducts(): Product[] {
@@ -693,10 +696,12 @@ export function getFeaturedProducts(): Product[] {
 export function searchProducts(query: string): Product[] {
   const lowerQuery = query.toLowerCase()
   return products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(lowerQuery) ||
-      p.description.toLowerCase().includes(lowerQuery) ||
-      p.category.toLowerCase().includes(lowerQuery) ||
-      p.brand.toLowerCase().includes(lowerQuery)
+    (p) => {
+      const cat = typeof p.category === 'string' ? p.category : p.category?.name || ''
+      return p.name.toLowerCase().includes(lowerQuery) ||
+        (p.description?.toLowerCase().includes(lowerQuery) ?? false) ||
+        cat.toLowerCase().includes(lowerQuery) ||
+        (p.brand?.toLowerCase().includes(lowerQuery) ?? false)
+    }
   )
 }

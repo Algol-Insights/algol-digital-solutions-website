@@ -91,7 +91,7 @@ function WishlistCard({ item }: { item: WishlistItem }) {
           </Link>
           <div className="flex items-center gap-2">
             <span className="text-xs text-brand-teal-medium font-semibold uppercase">
-              {item.category}
+              {typeof item.category === 'string' ? item.category : item.category?.name || 'Uncategorized'}
             </span>
           </div>
           <div className="flex items-center gap-2">

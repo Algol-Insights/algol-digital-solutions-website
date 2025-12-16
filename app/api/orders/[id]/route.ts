@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db/prisma"
 
-// GET /api/orders/[id] - Fetch single order
+// GET /api/orders/[id] - Fetch single order with authentication
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
     const { id } = await params
 
     const order = await prisma.order.findUnique({
@@ -14,7 +17,27 @@ export async function GET(
       include: {
         customer: true,
         orderItems: {
-          include: { product: true },
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                images: true,
+                brand: true,
+              },
+            },
+            variant: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+                size: true,
+                storage: true,
+                image: true,
+              },
+            },
+          },
         },
       },
     })
@@ -26,7 +49,31 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(order)
+    // If user is logged in, verify they own this order
+    if (session && session.user) {
+      const userId = (session.user as any).id;
+      if (order.userId && order.userId !== userId) {
+        return NextResponse.json(
+          { error: "Unauthorized. This order does not belong to you." },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Parse shipping address if it's a JSON string
+    let shippingAddress = null;
+    if (order.shippingAddress) {
+      try {
+        shippingAddress = JSON.parse(order.shippingAddress);
+      } catch (e) {
+        shippingAddress = order.shippingAddress;
+      }
+    }
+
+    return NextResponse.json({
+      ...order,
+      shippingAddress,
+    })
   } catch (error) {
     console.error("Error fetching order:", error)
     return NextResponse.json(

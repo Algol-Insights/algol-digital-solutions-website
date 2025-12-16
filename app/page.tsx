@@ -15,6 +15,7 @@ import {
   Search,
   Sparkles
 } from "lucide-react"
+import { HeroLanding, ServicesShowcase, AboutSection } from "@/components/hero-landing"
 import { HeroBanner } from "@/components/hero-banner"
 import { HotDealsSection } from "@/components/hot-deals"
 import { MegaMenu } from "@/components/mega-menu"
@@ -32,8 +33,8 @@ const services = [
   },
   {
     icon: Cloud,
-    title: "Microsoft 365 Services",
-    description: "Authorized Microsoft 365 reseller. Get Office apps, cloud storage, Teams, and email hosting with expert setup and support."
+    title: "Cloud Productivity Services",
+    description: "Multi-cloud solutions provider. Microsoft 365 and Google Workspace - Office apps, cloud storage, collaboration tools, and email hosting with expert setup and support."
   },
   {
     icon: Lock,
@@ -63,7 +64,16 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* HERO BANNER WITH ADVANCED ANIMATIONS */}
+      {/* STUNNING LANDING HERO - First thing users see */}
+      <HeroLanding />
+      
+      {/* SERVICES SHOWCASE */}
+      <ServicesShowcase />
+      
+      {/* ABOUT SECTION */}
+      <AboutSection />
+
+      {/* PRODUCTS HERO BANNER */}
       <section className="py-8 lg:py-12 bg-gradient-to-b from-slate-950 via-slate-900 to-background relative overflow-hidden">
         {/* Animated background particles */}
         <div className="absolute inset-0 overflow-hidden">
@@ -359,9 +369,9 @@ export default function HomePage() {
             {/* Trust badges */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
-                { value: "2000+", label: "Happy Clients" },
+                { value: "1000+", label: "Happy Clients" },
                 { value: "5000+", label: "Products Sold" },
-                { value: "20+", label: "Years in Business" },
+                { value: "5+", label: "Years in Business" },
                 { value: "24/7", label: "Support Available" }
               ].map((stat, index) => (
                 <motion.div

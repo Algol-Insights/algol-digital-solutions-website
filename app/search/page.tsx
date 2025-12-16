@@ -1,24 +1,110 @@
 "use client"
 
-import { Suspense, useState, useMemo } from "react"
-import { useSearchParams } from "next/navigation"
+import { Suspense, useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { Search, ArrowLeft } from "lucide-react"
+import { Search, ArrowLeft, Loader2, Filter } from "lucide-react"
 import { Button } from "@/components/ui-lib"
-import { searchProducts, products } from "../../lib/products"
-import { ProductCard } from "../../components/product-card"
+import { ProductCard } from "@/components/product-card"
+import { Pagination } from "@/components/pagination"
+import { Product } from "@/lib/cart-store"
+
+interface SearchResponse {
+  success: boolean
+  data: Product[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+  query: string
+}
 
 function SearchContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const initialQuery = searchParams.get("q") || ""
-  const [searchQuery, setSearchQuery] = useState(initialQuery)
+  const initialPage = parseInt(searchParams.get("page") || "1")
+  const initialSortBy = searchParams.get("sortBy") || "relevance"
   
-  const results = useMemo(() => {
-    if (!searchQuery.trim()) return []
-    return searchProducts(searchQuery)
-  }, [searchQuery])
+  const [searchQuery, setSearchQuery] = useState(initialQuery)
+  const [results, setResults] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [pagination, setPagination] = useState({
+    page: initialPage,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+  })
+  const [sortBy, setSortBy] = useState(initialSortBy)
 
-  const popularSearches = ["laptop", "dell", "networking", "monitor", "security"]
+  const popularSearches = ["laptop", "dell", "networking", "monitor", "security", "apple", "hp"]
+
+  // Fetch search results
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!searchQuery.trim()) {
+        setResults([])
+        setPagination({ page: 1, limit: 12, total: 0, totalPages: 0 })
+        return
+      }
+
+      setIsLoading(true)
+      try {
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(searchQuery)}&page=${pagination.page}&limit=12&sortBy=${sortBy}`
+        )
+        const data: SearchResponse = await response.json()
+
+        if (data.success) {
+          setResults(data.data)
+          setPagination(data.pagination)
+        } else {
+          setResults([])
+          setPagination({ page: 1, limit: 12, total: 0, totalPages: 0 })
+        }
+      } catch (error) {
+        console.error("Search error:", error)
+        setResults([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchResults()
+  }, [searchQuery, pagination.page, sortBy])
+
+  // Update query when searchParams change
+  useEffect(() => {
+    const newQuery = searchParams.get("q") || ""
+    const newPage = parseInt(searchParams.get("page") || "1")
+    const newSortBy = searchParams.get("sortBy") || "relevance"
+    
+    setSearchQuery(newQuery)
+    setPagination((prev) => ({ ...prev, page: newPage }))
+    setSortBy(newSortBy)
+  }, [searchParams])
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query)
+    router.push(`/search?q=${encodeURIComponent(query)}`)
+  }
+
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("page", page.toString())
+    router.push(`/search?${params.toString()}`)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const handleSortChange = (newSortBy: string) => {
+    setSortBy(newSortBy)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("sortBy", newSortBy)
+    params.set("page", "1") // Reset to first page on sort change
+    router.push(`/search?${params.toString()}`)
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,7 +113,7 @@ function SearchContent() {
         <div className="container mx-auto px-4">
           <Link 
             href="/products" 
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4"
+            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Products
@@ -40,7 +126,7 @@ function SearchContent() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search for laptops, monitors, networking equipment..."
               className="w-full pl-12 pr-4 py-4 rounded-xl text-gray-900 text-lg focus:outline-none focus:ring-4 focus:ring-white/30"
               autoFocus
@@ -53,7 +139,7 @@ function SearchContent() {
             {popularSearches.map((term) => (
               <button
                 key={term}
-                onClick={() => setSearchQuery(term)}
+                onClick={() => handleSearch(term)}
                 className="px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 text-sm transition-colors"
               >
                 {term}
@@ -67,23 +153,68 @@ function SearchContent() {
         {/* Results */}
         {searchQuery.trim() ? (
           <>
-            <div className="mb-6">
+            {/* Results Header with Sort */}
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <h2 className="text-xl font-semibold">
-                {results.length === 0 ? (
+                {isLoading ? (
+                  <>Searching...</>
+                ) : pagination.total === 0 ? (
                   <>No results for &quot;{searchQuery}&quot;</>
                 ) : (
-                  <>{results.length} result{results.length !== 1 ? "s" : ""} for &quot;{searchQuery}&quot;</>
+                  <>
+                    {pagination.total} result{pagination.total !== 1 ? "s" : ""} for &quot;{searchQuery}&quot;
+                  </>
                 )}
               </h2>
+
+              {/* Sort Dropdown */}
+              {pagination.total > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Sort by:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="px-3 py-2 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal-medium"
+                  >
+                    <option value="relevance">Relevance</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="popular">Most Popular</option>
+                    <option value="newest">Newest First</option>
+                  </select>
+                </div>
+              )}
             </div>
 
-            {results.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {results.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-brand-teal-medium" />
               </div>
-            ) : (
+            )}
+
+            {/* Results Grid */}
+            {!isLoading && results.length > 0 && (
+              <>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {results.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.totalPages}
+                  onPageChange={handlePageChange}
+                  className="mt-8"
+                />
+              </>
+            )}
+
+            {/* No Results */}
+            {!isLoading && results.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
                   <Search className="h-10 w-10 text-muted-foreground" />
@@ -107,7 +238,7 @@ function SearchContent() {
             </div>
             <h3 className="text-lg font-medium mb-2">Start typing to search</h3>
             <p className="text-muted-foreground mb-6">
-              Search across {products.length} products in our catalog
+              Search across our product catalog
             </p>
             
             {/* Featured Categories */}

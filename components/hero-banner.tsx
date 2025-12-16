@@ -33,7 +33,7 @@ const heroSlides: HeroSlide[] = [
     badge: "New Arrival",
     discount: "Up to 40% OFF",
     bgGradient: "from-brand-teal-dark via-brand-teal-medium to-brand-golden",
-    features: ["Free Nationwide Delivery", "24/7 Support", "Genuine Products"]
+    features: ["Delivery Nationwide", "24/7 Support", "Genuine Products"]
   },
   {
     id: 2,
@@ -67,7 +67,14 @@ export function HeroBanner() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [direction, setDirection] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  
+  // Only show particles on client to avoid hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   
   // Mouse parallax effect
   const mouseX = useMotionValue(0)
@@ -135,7 +142,10 @@ export function HeroBanner() {
     >
       {/* Animated Background with Particles */}
       <div className={`absolute inset-0 bg-gradient-to-br ${slide.bgGradient}`}>
-        {/* Animated floating orbs */}
+        {/* Animated floating orbs - only render on client */}
+        {isMounted && (
+          <>
+            {/* Animated floating orbs */}
         <motion.div
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"
           animate={{
@@ -162,9 +172,12 @@ export function HeroBanner() {
             ease: "easeInOut"
           }}
         />
+          </>
+        )}
       </div>
 
       {/* Animated Grid Pattern */}
+      {isMounted && (
       <div className="absolute inset-0 opacity-10">
         <motion.div 
           className="absolute inset-0" 
@@ -181,6 +194,7 @@ export function HeroBanner() {
           }}
         />
       </div>
+      )}
 
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <motion.div
@@ -291,7 +305,7 @@ export function HeroBanner() {
                   <Link href={slide.ctaLink}>
                     <Button
                       size="lg"
-                      className="bg-white text-brand-teal-dark hover:bg-brand-golden hover:text-white font-bold group shadow-2xl hover:shadow-brand-golden/50 transition-all duration-300 hover:scale-105"
+                      className="bg-brand-teal-medium text-white hover:bg-brand-teal-dark font-bold group shadow-2xl hover:shadow-brand-teal-dark/50 transition-all duration-300 hover:scale-105 -ml-2"
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       {slide.cta}
@@ -301,8 +315,7 @@ export function HeroBanner() {
                   <Link href="/support">
                     <Button
                       size="lg"
-                      variant="outline"
-                      className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-brand-teal-dark font-semibold shadow-xl transition-all duration-300 hover:scale-105"
+                      className="bg-brand-teal-medium text-white hover:bg-brand-teal-dark font-bold shadow-2xl hover:shadow-brand-teal-dark/50 transition-all duration-300 hover:scale-105"
                     >
                       <Shield className="mr-2 h-5 w-5" />
                       Learn More
@@ -322,8 +335,8 @@ export function HeroBanner() {
                       <Package className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold block">Free Delivery</span>
-                      <span className="text-xs text-white/70">Nationwide</span>
+                      <span className="text-xs font-bold block">Delivery Nationwide</span>
+                      <span className="text-xs text-white/70">Free in Harare</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 group cursor-pointer">
@@ -424,28 +437,16 @@ export function HeroBanner() {
       </AnimatePresence>
 
       {/* Enhanced Navigation Arrows with better styling */}
-      <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none z-20">
-        <motion.div
-          whileHover={{ scale: 1.1, x: -5 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="pointer-events-auto h-14 w-14 rounded-full bg-white/10 backdrop-blur-xl text-white hover:bg-white/20 transition-all border border-white/20 shadow-xl hover:shadow-2xl"
-            onClick={() => navigate((currentSlide - 1 + heroSlides.length) % heroSlides.length)}
-          >
-            <ChevronLeft className="h-7 w-7" />
-          </Button>
-        </motion.div>
+      <div className="absolute inset-0 flex items-center justify-end pointer-events-none z-20">
         <motion.div
           whileHover={{ scale: 1.1, x: 5 }}
           whileTap={{ scale: 0.95 }}
+          className="absolute right-2 md:right-4"
         >
           <Button
             variant="ghost"
             size="icon"
-            className="pointer-events-auto h-14 w-14 rounded-full bg-white/10 backdrop-blur-xl text-white hover:bg-white/20 transition-all border border-white/20 shadow-xl hover:shadow-2xl"
+            className="pointer-events-auto h-12 w-12 md:h-14 md:w-14 rounded-full bg-slate-900/80 backdrop-blur-xl text-white hover:bg-slate-800/90 transition-all border border-white/40 shadow-xl hover:shadow-2xl"
             onClick={() => navigate((currentSlide + 1) % heroSlides.length)}
           >
             <ChevronRight className="h-7 w-7" />

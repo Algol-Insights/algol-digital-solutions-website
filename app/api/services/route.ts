@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@/lib/db/prisma'
 
 // GET /api/services - Get all services with filtering
 export async function GET(request: NextRequest) {

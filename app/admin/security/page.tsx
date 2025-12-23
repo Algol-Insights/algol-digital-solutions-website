@@ -4,7 +4,24 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui-lib/button';
 import { Input } from '@/components/ui-lib/input';
 import { Card } from '@/components/ui-lib/card';
-import { Shield, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldOff, ClipboardList, RefreshCw } from 'lucide-react';
+
+type AuditLog = {
+  id: string
+  action: string
+  targetType?: string | null
+  targetId?: string | null
+  status: string
+  ip?: string | null
+  userAgent?: string | null
+  metadata?: Record<string, any> | null
+  createdAt: string
+  user?: {
+    email?: string | null
+    name?: string | null
+    role?: string | null
+  } | null
+}
 
 export default function TwoFactorAuth() {
   const [enabled, setEnabled] = useState(false);
@@ -15,9 +32,12 @@ export default function TwoFactorAuth() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showSetup, setShowSetup] = useState(false);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   useEffect(() => {
     checkStatus();
+    loadAuditLogs();
   }, []);
 
   const checkStatus = async () => {
@@ -29,6 +49,22 @@ export default function TwoFactorAuth() {
       console.error('Failed to check 2FA status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAuditLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const response = await fetch('/api/admin/audit?limit=20');
+      if (!response.ok) {
+        throw new Error('Failed to fetch audit logs');
+      }
+      const data = await response.json();
+      setLogs(data.logs || []);
+    } catch (error) {
+      console.error('Failed to load audit logs:', error);
+    } finally {
+      setLogsLoading(false);
     }
   };
 
@@ -269,6 +305,63 @@ export default function TwoFactorAuth() {
           </div>
         </Card>
       )}
+
+      {/* Audit Log */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <ClipboardList className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold">Recent Admin Activity</h3>
+              <p className="text-sm text-gray-600">Latest security-relevant actions</p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={loadAuditLogs} disabled={logsLoading}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {logsLoading && (
+            <div className="text-sm text-gray-600">Loading audit logs...</div>
+          )}
+
+          {!logsLoading && logs.length === 0 && (
+            <div className="text-sm text-gray-600">No recent activity.</div>
+          )}
+
+          {!logsLoading &&
+            logs.map((log) => (
+              <div
+                key={log.id}
+                className="flex items-start justify-between rounded-md border border-gray-200 p-3 bg-white"
+              >
+                <div className="space-y-1">
+                  <div className="text-xs text-gray-500">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </div>
+                  <div className="text-sm font-semibold">{log.action}</div>
+                  <div className="text-sm text-gray-600">
+                    {(log.user?.email || log.user?.name) ?? 'Unknown user'}
+                    {log.user?.role ? ` (${log.user.role})` : ''}
+                    {log.targetType ? ` • ${log.targetType}${log.targetId ? `#${log.targetId}` : ''}` : ''}
+                  </div>
+                  {log.ip && <div className="text-xs text-gray-500">IP: {log.ip}</div>}
+                </div>
+                <span
+                  className={`text-xs font-semibold px-2 py-1 rounded ${
+                    log.status === 'SUCCESS'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {log.status}
+                </span>
+              </div>
+            ))}
+        </div>
+      </Card>
     </div>
   );
 }

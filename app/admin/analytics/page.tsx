@@ -1,312 +1,271 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  ShoppingCart,
-  DollarSign,
-  Eye,
-  Download,
-  Filter,
-  ArrowUpRight,
-  ArrowDownRight,
-} from 'lucide-react'
-import {
-  getDashboardAnalytics,
-  getConversionFunnel,
-  getCustomerLifetimeValue,
-  getProductInsights,
-} from '@/lib/analytics'
+import { ArrowDownRight, ArrowUpRight, BarChart3, Download, Package, ShoppingCart, TrendingUp, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { getSalesAnalytics } from '@/lib/api'
 
 export default function AdminAnalyticsDashboard() {
-  const [metrics, setMetrics] = useState<any>(null)
-  const [conversionFunnel, setConversionFunnel] = useState<any>(null)
-  const [clv, setClv] = useState<any>(null)
-  const [productInsights, setProductInsights] = useState<any>(null)
-  const [dateRange, setDateRange] = useState('30d')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'overview' | 'revenue' | 'products' | 'cohorts'>('overview')
+  const [startDate, setStartDate] = useState<string>(() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return d.toISOString().split('T')[0]
+  })
+  const [endDate, setEndDate] = useState<string>(() => new Date().toISOString().split('T')[0])
+  const [range, setRange] = useState('30d')
+
+  const [overviewData, setOverviewData] = useState<any>(null)
+  const [revenueData, setRevenueData] = useState<any[]>([])
+  const [topProducts, setTopProducts] = useState<any[]>([])
+  const [cohortData, setCohortData] = useState<any[]>([])
+
+  const formatCurrency = (val: number) => `$${val.toLocaleString('en-US', { maximumFractionDigits: 0 })}`
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const [analyticsData, funnelData, clvData, insightsData] = await Promise.all([
-          getDashboardAnalytics(),
-          getConversionFunnel(),
-          getCustomerLifetimeValue(),
-          getProductInsights(),
-        ])
-
-        setMetrics(analyticsData)
-        setConversionFunnel(funnelData)
-        setClv(clvData)
-        setProductInsights(insightsData)
-      } catch (error) {
-        console.error('Failed to fetch analytics:', error)
-      } finally {
-        setLoading(false)
-      }
+    if (activeTab === 'overview') {
+      setLoading(true)
+      getSalesAnalytics(range)
+        .then(setOverviewData)
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false))
     }
+  }, [activeTab, range])
 
-    fetchAnalytics()
-  }, [dateRange])
+  useEffect(() => {
+    if (activeTab !== 'overview') {
+      setLoading(true)
+      setError(null)
+      
+      const params = new URLSearchParams({ startDate, endDate })
+      
+      Promise.all([
+        activeTab === 'revenue' ? fetch(`/api/admin/analytics/revenue?${params}&interval=day`).then(r => r.json()).then(d => setRevenueData(d.timeSeries || [])) : Promise.resolve(),
+        activeTab === 'products' ? fetch(`/api/admin/analytics/products?${params}&limit=10&metric=revenue`).then(r => r.json()).then(d => setTopProducts(d.top || [])) : Promise.resolve(),
+        activeTab === 'cohorts' ? fetch(`/api/admin/analytics/cohorts?${params}&interval=month`).then(r => r.json()).then(d => setCohortData(d.cohorts || [])) : Promise.resolve(),
+      ])
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false))
+    }
+  }, [activeTab, startDate, endDate])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground">Loading analytics...</div>
-      </div>
-    )
+  const handleExportCSV = () => {
+    const headers = ['Date', 'Revenue', 'Orders', 'AOV']
+    const rows = revenueData.map((d) => [d.date, d.revenue.toFixed(2), d.orderCount, d.averageOrderValue.toFixed(2)])
+    const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `revenue-${startDate}-${endDate}.csv`
+    a.click()
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
       {/* Header */}
-      <div className="border-b border-border sticky top-0 z-40 bg-background">
-        <div className="container mx-auto px-4 py-6">
-          <Link href="/digital-solutions/admin" className="text-sm text-muted-foreground hover:text-foreground mb-4 inline-block">
-            ← Back to Admin
-          </Link>
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <BarChart3 className="w-8 h-8" />
-              Analytics Dashboard
-            </h1>
-            <div className="flex gap-3">
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="px-4 py-2 bg-card border border-border rounded-lg text-sm"
-              >
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="90d">Last 90 Days</option>
-                <option value="1y">Last Year</option>
-              </select>
-              <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90">
-                <Download className="w-4 h-4" />
-                Export Report
-              </button>
+      <div className="bg-slate-950 border-b border-slate-800 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-5">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <Link href="/admin" className="text-slate-400 hover:text-white text-sm">← Back</Link>
+              <h1 className="text-2xl font-bold text-white mt-2 flex items-center gap-2">
+                <BarChart3 className="w-6 h-6" /> Analytics
+              </h1>
             </div>
+            <div className="flex gap-2">
+              {activeTab === 'overview' && (
+                <select value={range} onChange={(e) => setRange(e.target.value)} className="px-3 py-2 bg-slate-900 border border-slate-700 rounded text-slate-100 text-sm">
+                  <option value="7d">7 days</option>
+                  <option value="30d">30 days</option>
+                  <option value="90d">90 days</option>
+                </select>
+              )}
+              {activeTab !== 'overview' && (
+                <>
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-slate-700 rounded text-slate-100 text-sm" />
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="px-3 py-2 bg-slate-900 border border-slate-700 rounded text-slate-100 text-sm" />
+                  {activeTab === 'revenue' && (
+                    <Button size="sm" onClick={handleExportCSV} className="bg-blue-600 hover:bg-blue-700">
+                      <Download className="w-4 h-4 mr-1" /> Export
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1">
+            {[
+              { id: 'overview', label: 'Overview' },
+              { id: 'revenue', label: 'Revenue' },
+              { id: 'products', label: 'Products' },
+              { id: 'cohorts', label: 'Cohorts' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition ${activeTab === tab.id ? 'border-blue-500 text-white' : 'border-transparent text-slate-400'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Total Revenue */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold">${(metrics?.salesMetrics?.totalRevenue / 1000).toFixed(1)}k</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-600" />
-            </div>
-            <div className="flex items-center gap-1 text-sm font-medium text-green-600">
-              <ArrowUpRight className="w-4 h-4" />
-              12.5% from last period
-            </div>
-          </div>
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {error && <div className="p-4 bg-red-500/20 border border-red-500 rounded mb-6 text-red-200">{error}</div>}
+        {loading && <div className="text-slate-300 text-center py-12">Loading...</div>}
 
-          {/* Total Orders */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Orders</p>
-                <p className="text-3xl font-bold">{metrics?.salesMetrics?.totalOrders}</p>
-              </div>
-              <ShoppingCart className="w-8 h-8 text-blue-600" />
-            </div>
-            <div className="flex items-center gap-1 text-sm font-medium text-blue-600">
-              <ArrowUpRight className="w-4 h-4" />
-              8.3% from last period
-            </div>
-          </div>
-
-          {/* Average Order Value */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Avg Order Value</p>
-                <p className="text-3xl font-bold">${metrics?.salesMetrics?.averageOrderValue?.toFixed(0)}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-orange-600" />
-            </div>
-            <div className="flex items-center gap-1 text-sm font-medium text-red-600">
-              <ArrowDownRight className="w-4 h-4" />
-              1.2% from last period
-            </div>
-          </div>
-
-          {/* Conversion Rate */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Conversion Rate</p>
-                <p className="text-3xl font-bold">{metrics?.salesMetrics?.conversionRate}%</p>
-              </div>
-              <Eye className="w-8 h-8 text-violet-600" />
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {(conversionFunnel?.purchased || 0).toLocaleString()} purchases
-            </div>
-          </div>
-        </div>
-
-        {/* Conversion Funnel */}
-        {conversionFunnel && (
-          <div className="bg-card border border-border rounded-lg p-6 mb-8">
-            <h2 className="text-lg font-semibold mb-6">Conversion Funnel</h2>
-            <div className="space-y-4">
+        {!loading && activeTab === 'overview' && overviewData && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {[
-                { label: 'Visitors', value: conversionFunnel.visitors, color: 'bg-blue-500' },
-                { label: 'Added to Cart', value: conversionFunnel.addedToCart, color: 'bg-orange-500' },
-                { label: 'Checked Out', value: conversionFunnel.checkedOut, color: 'bg-yellow-500' },
-                { label: 'Purchased', value: conversionFunnel.purchased, color: 'bg-green-500' },
-              ].map((stage, index) => {
-                const percentage = (stage.value / conversionFunnel.visitors) * 100
+                { label: 'GMV', value: overviewData.gmv?.total, icon: ShoppingCart, change: overviewData.gmv?.change },
+                { label: 'Orders', value: overviewData.orders?.total, icon: ShoppingCart, change: overviewData.orders?.change },
+                { label: 'AOV', value: overviewData.avgOrderValue?.total, icon: TrendingUp, change: overviewData.avgOrderValue?.change, prefix: '$' },
+                { label: 'Customers', value: overviewData.customers?.total, icon: Users, change: overviewData.customers?.change },
+              ].map((card) => {
+                const Icon = card.icon
                 return (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium">{stage.label}</span>
-                      <span className="text-muted-foreground">
-                        {stage.value.toLocaleString()} ({percentage.toFixed(1)}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div className={`${stage.color} h-2 rounded-full`} style={{ width: `${percentage}%` }}></div>
-                    </div>
+                  <div key={card.label} className="bg-slate-900 border border-slate-800 rounded-lg p-4">
+                    <p className="text-slate-400 text-sm">{card.label}</p>
+                    <p className="text-2xl font-bold text-white mt-1">{card.prefix}{card.value?.toLocaleString()}</p>
+                    {card.change !== undefined && (
+                      <p className={`text-xs mt-2 ${card.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {card.change >= 0 ? '↑' : '↓'} {Math.abs(card.change).toFixed(1)}%
+                      </p>
+                    )}
                   </div>
                 )
               })}
             </div>
-          </div>
-        )}
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Top Products */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-6">Top Products</h2>
-            <div className="space-y-4">
-              {metrics?.topProducts?.map((product: any) => (
-                <div key={product.productId} className="border-b border-border pb-4 last:border-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-medium text-foreground">{product.productName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {product.unitsSold} units · ${product.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-green-600">{product.rating}★</p>
-                      <p className="text-xs text-muted-foreground">{product.reviews} reviews</p>
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+                <h2 className="text-white font-semibold mb-4">Top Products</h2>
+                {overviewData.topProducts?.length ? (
+                  <div className="space-y-2">
+                    {overviewData.topProducts.map((p: any) => (
+                      <div key={p.id} className="flex justify-between items-center p-2 bg-slate-800 rounded">
+                        <span className="text-slate-300 text-sm">{p.name}</span>
+                        <span className="text-white text-sm font-semibold">{formatCurrency(p.revenue)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="w-full bg-secondary rounded-full h-1.5">
-                    <div className="bg-green-500 h-1.5 rounded-full" style={{ width: `${(product.unitsSold / 62) * 100}%` }}></div>
+                ) : (
+                  <p className="text-slate-400 text-sm">No data</p>
+                )}
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+                <h2 className="text-white font-semibold mb-4">Recent Orders</h2>
+                {overviewData.recentOrders?.length ? (
+                  <div className="space-y-2">
+                    {overviewData.recentOrders.slice(0, 5).map((o: any) => (
+                      <div key={o.id} className="flex justify-between items-center p-2 bg-slate-800 rounded">
+                        <div>
+                          <p className="text-slate-300 text-sm">{o.orderNumber}</p>
+                          <p className="text-slate-500 text-xs">{o.customerName}</p>
+                        </div>
+                        <span className="text-white font-semibold">{formatCurrency(o.total)}</span>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Top Customers */}
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold mb-6">Top Customers</h2>
-            <div className="space-y-4">
-              {metrics?.topCustomers?.map((customer: any) => (
-                <div key={customer.customerId} className="border-b border-border pb-4 last:border-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <p className="font-medium text-foreground">{customer.customerName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {customer.orderCount} orders · {customer.lifetime}
-                      </p>
-                    </div>
-                    <p className="font-semibold text-violet-600">${customer.totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}</p>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-1.5">
-                    <div className="bg-violet-500 h-1.5 rounded-full" style={{ width: `${(customer.totalSpent / 5234) * 100}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Customer Insights */}
-        {clv && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <p className="text-sm text-muted-foreground mb-2">Average CLV</p>
-              <p className="text-2xl font-bold">${clv.average?.toFixed(0)}</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-6">
-              <p className="text-sm text-muted-foreground mb-2">Median CLV</p>
-              <p className="text-2xl font-bold">${clv.median?.toFixed(0)}</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-6">
-              <p className="text-sm text-muted-foreground mb-2">Max CLV</p>
-              <p className="text-2xl font-bold">${clv.max?.toFixed(0)}</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-6">
-              <p className="text-sm text-muted-foreground mb-2">Total CLV</p>
-              <p className="text-2xl font-bold">${(clv.total / 1000)?.toFixed(1)}k</p>
+                ) : (
+                  <p className="text-slate-400 text-sm">No data</p>
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Product Insights */}
-        {productInsights && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Best Performers */}
-            <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-6">
-              <h3 className="font-semibold text-green-900 dark:text-green-100 mb-4">Best Performers</h3>
-              <div className="space-y-3">
-                {productInsights.bestPerformers.map((product: any) => (
-                  <div key={product.productId}>
-                    <p className="text-sm font-medium text-green-900 dark:text-green-100">{product.productName}</p>
-                    <p className="text-xs text-green-700 dark:text-green-300">
-                      ${product.revenue.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                    </p>
-                  </div>
-                ))}
-              </div>
+        {!loading && activeTab === 'revenue' && (
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+            <h2 className="text-white font-semibold mb-4">Revenue Trend</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-slate-700">
+                  <tr className="text-slate-400">
+                    <th className="text-left py-2">Date</th>
+                    <th className="text-right py-2">Revenue</th>
+                    <th className="text-right py-2">Orders</th>
+                    <th className="text-right py-2">AOV</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {revenueData.map((d) => (
+                    <tr key={d.date} className="hover:bg-slate-800/50">
+                      <td className="text-slate-300 py-2">{d.date}</td>
+                      <td className="text-right text-white font-semibold">{formatCurrency(d.revenue)}</td>
+                      <td className="text-right text-slate-300">{d.orderCount}</td>
+                      <td className="text-right text-slate-300">{formatCurrency(d.averageOrderValue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
+        )}
 
-            {/* Needs Attention */}
-            <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-              <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-4">Needs Attention</h3>
-              <div className="space-y-3">
-                {productInsights.needsAttention.map((product: any) => (
-                  <div key={product.productId}>
-                    <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100">{product.productName}</p>
-                    <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                      Only {product.unitsSold} units sold
-                    </p>
-                  </div>
-                ))}
-              </div>
+        {!loading && activeTab === 'products' && (
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+            <h2 className="text-white font-semibold mb-4">Top Products</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-slate-700">
+                  <tr className="text-slate-400">
+                    <th className="text-left py-2">Product</th>
+                    <th className="text-right py-2">Revenue</th>
+                    <th className="text-right py-2">Units</th>
+                    <th className="text-right py-2">Avg Price</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {topProducts.map((p) => (
+                    <tr key={p.productId} className="hover:bg-slate-800/50">
+                      <td className="text-slate-300 py-2">{p.productName}</td>
+                      <td className="text-right text-white font-semibold">{formatCurrency(p.revenue)}</td>
+                      <td className="text-right text-slate-300">{p.unitsSold}</td>
+                      <td className="text-right text-slate-300">{formatCurrency(p.averagePrice)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+          </div>
+        )}
 
-            {/* High Return Rate */}
-            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-6">
-              <h3 className="font-semibold text-red-900 dark:text-red-100 mb-4">High Return Rate</h3>
-              <div className="space-y-3">
-                {productInsights.highReturn.map((product: any) => (
-                  <div key={product.productId}>
-                    <p className="text-sm font-medium text-red-900 dark:text-red-100">{product.productName}</p>
-                    <p className="text-xs text-red-700 dark:text-red-300">
-                      {product.returnRate}% return rate
-                    </p>
-                  </div>
-                ))}
-              </div>
+        {!loading && activeTab === 'cohorts' && (
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-5">
+            <h2 className="text-white font-semibold mb-4">Cohort Retention</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-slate-700">
+                  <tr className="text-slate-400">
+                    <th className="text-left py-2">Cohort</th>
+                    <th className="text-center py-2">P0</th>
+                    <th className="text-center py-2">P1</th>
+                    <th className="text-center py-2">P2</th>
+                    <th className="text-center py-2">P3</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {cohortData.map((c) => (
+                    <tr key={c.cohort} className="hover:bg-slate-800/50">
+                      <td className="text-slate-300 py-2">{c.cohort}</td>
+                      <td className="text-center text-white">{c.period0}</td>
+                      <td className="text-center text-slate-300">{c.period1} ({c.retention[1]}%)</td>
+                      <td className="text-center text-slate-300">{c.period2} ({c.retention[2]}%)</td>
+                      <td className="text-center text-slate-300">{c.period3} ({c.retention[3]}%)</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

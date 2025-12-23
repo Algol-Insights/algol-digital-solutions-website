@@ -7,7 +7,7 @@ import { Flame, Clock, Star, ShoppingCart, Eye, Heart, TrendingUp, Zap } from "l
 import { Button } from "@/components/ui/button"
 
 interface Deal {
-  id: number
+  id: string
   name: string
   category: string
   price: number
@@ -20,70 +20,8 @@ interface Deal {
   image: string
   endsAt: Date
   badge?: "HOT" | "NEW" | "LIMITED"
+  slug: string
 }
-
-const mockDeals: Deal[] = [
-  {
-    id: 1,
-    name: "Advanced Security Camera System",
-    category: "Security",
-    price: 299.99,
-    originalPrice: 499.99,
-    discount: 40,
-    rating: 4.8,
-    reviews: 234,
-    sold: 156,
-    stock: 24,
-    image: "/products/camera.jpg",
-    endsAt: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours
-    badge: "HOT"
-  },
-  {
-    id: 2,
-    name: "Enterprise Router Pro",
-    category: "Networking",
-    price: 189.99,
-    originalPrice: 299.99,
-    discount: 37,
-    rating: 4.6,
-    reviews: 189,
-    sold: 98,
-    stock: 45,
-    image: "/products/router.jpg",
-    endsAt: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours
-    badge: "NEW"
-  },
-  {
-    id: 3,
-    name: "Smart Home Hub",
-    category: "Smart Home",
-    price: 149.99,
-    originalPrice: 249.99,
-    discount: 40,
-    rating: 4.9,
-    reviews: 412,
-    sold: 287,
-    stock: 12,
-    image: "/products/hub.jpg",
-    endsAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours
-    badge: "LIMITED"
-  },
-  {
-    id: 4,
-    name: "Business Laptop Ultra",
-    category: "Laptops",
-    price: 899.99,
-    originalPrice: 1299.99,
-    discount: 31,
-    rating: 4.7,
-    reviews: 156,
-    sold: 67,
-    stock: 18,
-    image: "/products/laptop.jpg",
-    endsAt: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours
-    badge: "HOT"
-  }
-]
 
 function CountdownTimer({ endsAt }: { endsAt: Date }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -181,7 +119,7 @@ function DealCard({ deal }: { deal: Deal }) {
       </motion.div>
 
       {/* Product Image */}
-      <Link href={`/products/${deal.id}`}>
+      <Link href={`/products/${deal.slug}`}>
         <div className="relative h-64 bg-gray-100 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             <ShoppingCart className="h-24 w-24 text-gray-300" />
@@ -266,6 +204,64 @@ function DealCard({ deal }: { deal: Deal }) {
 }
 
 export function HotDealsSection() {
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [deals, setDeals] = useState<Deal[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchHotDeals() {
+      try {
+        const response = await fetch('/api/products?onSale=true&limit=8')
+        const data = await response.json()
+        
+        const formattedDeals: Deal[] = data.data.map((product: any) => ({
+          id: product.id,
+          name: product.name,
+          category: product.category?.name || 'Uncategorized',
+          price: product.price,
+          originalPrice: product.originalPrice || product.price * 1.3,
+          discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0,
+          rating: product.rating || 0,
+          reviews: product.reviewCount || 0,
+          sold: Math.floor(Math.random() * 300),
+          stock: product.stock,
+          image: product.image || '/products/placeholder.jpg',
+          endsAt: new Date(Date.now() + (Math.floor(Math.random() * 10) + 2) * 60 * 60 * 1000),
+          badge: product.stock < 20 ? 'LIMITED' : (product.featured ? 'HOT' : 'NEW'),
+          slug: product.slug
+        }))
+        
+        setDeals(formattedDeals)
+      } catch (error) {
+        console.error('Failed to fetch hot deals:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchHotDeals()
+  }, [])
+
+  const categories = ["all", ...Array.from(new Set(deals.map(d => d.category)))]
+
+  const filteredDeals = selectedCategory === "all" 
+    ? deals 
+    : deals.filter(d => d.category === selectedCategory)
+
+  if (loading) {
+    return (
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="text-muted-foreground">Loading hot deals...</div>
+        </div>
+      </section>
+    )
+  }
+
+  if (deals.length === 0) {
+    return null
+  }
+
   return (
     <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
@@ -292,7 +288,7 @@ export function HotDealsSection() {
 
         {/* Deals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockDeals.map((deal) => (
+          {filteredDeals.map((deal) => (
             <DealCard key={deal.id} deal={deal} />
           ))}
         </div>

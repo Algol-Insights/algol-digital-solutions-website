@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui-lib"
@@ -22,7 +23,6 @@ import { MegaMenu } from "@/components/mega-menu"
 import { AdvancedSearch } from "@/components/advanced-search"
 import { TestimonialsSection } from "@/components/testimonials"
 import { FeaturesSection } from "@/components/features-section"
-import { products } from "@/lib/products"
 import { ProductCard } from "@/components/product-card"
 
 const services = [
@@ -59,8 +59,32 @@ const services = [
 ]
 
 export default function HomePage() {
-  const featuredProducts = products.filter(p => p.featured).slice(0, 8)
-  const saleProducts = products.filter(p => p.originalPrice).slice(0, 4)
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
+  const [saleProducts, setSaleProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const [featuredRes, saleRes] = await Promise.all([
+          fetch('/api/products?featured=true&limit=8'),
+          fetch('/api/products?onSale=true&limit=4')
+        ])
+        
+        const featuredData = await featuredRes.json()
+        const saleData = await saleRes.json()
+        
+        setFeaturedProducts(featuredData.data || [])
+        setSaleProducts(saleData.data || [])
+      } catch (error) {
+        console.error('Failed to fetch products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchProducts()
+  }, [])
 
   return (
     <div className="flex flex-col min-h-screen">

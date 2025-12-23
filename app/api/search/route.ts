@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { productRateLimiter } from "@/lib/rate-limit"
+import { perfMonitor } from "@/lib/performance"
 
 export async function GET(request: NextRequest) {
+  const started = Date.now()
   try {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+    const rate = productRateLimiter.consume(ip)
+    if (!rate.ok) {
+      const retryAfter = rate.retryAfterMs ? Math.ceil(rate.retryAfterMs / 1000).toString() : "60"
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429, headers: { "Retry-After": retryAfter } }
+      )
+    }
+
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get("q") || ""
     const page = parseInt(searchParams.get("page") || "1")
@@ -100,6 +113,12 @@ export async function GET(request: NextRequest) {
     ])
 
     const totalPages = Math.ceil(total / limit)
+
+    perfMonitor.log('API_REQUEST', '/api/search', Date.now() - started, {
+      query,
+      count: products.length,
+      page,
+    })
 
     return NextResponse.json({
       success: true,

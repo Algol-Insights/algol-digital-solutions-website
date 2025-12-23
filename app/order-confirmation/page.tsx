@@ -1,35 +1,70 @@
 import Link from "next/link"
 import { Button } from "@/components/ui-lib"
 import { CheckCircle, Package, Truck, Mail, Phone, ArrowRight, Printer, Download } from "lucide-react"
+import { notFound, redirect } from 'next/navigation'
+import { prisma } from '@/lib/db/prisma'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
-// This would normally come from URL params or server state
-const mockOrder = {
-  id: "ORD-2024-" + Math.random().toString(36).substr(2, 6).toUpperCase(),
-  date: new Date().toLocaleDateString('en-ZW', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  }),
-  email: "john.moyo@example.com",
-  deliveryMethod: "Standard Delivery",
-  estimatedDelivery: "December 12-14, 2024",
-  paymentMethod: "EcoCash",
-  subtotal: 1798,
-  delivery: 25,
-  total: 1823,
-  items: [
-    { name: "Dell Latitude 5540", qty: 1, price: 1599 },
-    { name: "Logitech MX Master 3S", qty: 2, price: 99 },
-  ],
-  address: {
-    name: "John Moyo",
-    address: "45 Churchill Avenue",
-    city: "Harare",
-    phone: "+263 788 663 313",
-  }
+interface Props {
+  searchParams: { orderId?: string }
 }
 
-export default function OrderConfirmationPage() {
+export default async function OrderConfirmationPage({ searchParams }: Props) {
+  const session = await getServerSession(authOptions)
+  const orderId = searchParams.orderId
+
+  if (!orderId) {
+    redirect('/account/orders')
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: {
+      orderItems: {
+        include: {
+          product: true
+        }
+      },
+      user: true
+    }
+  })
+
+  if (!order) {
+    notFound()
+  }
+
+  // Verify user owns this order
+  if (session?.user?.email && session.user.email !== order.user?.email) {
+    redirect('/account/orders')
+  }
+
+  const subtotal = order.orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const delivery = order.shipping || 0
+  const total = subtotal + delivery
+
+  const mockOrder = {
+    id: order.id,
+    date: new Date(order.createdAt).toLocaleDateString('en-ZW', { year: 'numeric', month: 'long', day: 'numeric' }),
+    email: order.user?.email || '',
+    deliveryMethod: 'Standard Delivery',
+    estimatedDelivery: order.status,
+    paymentMethod: order.paymentMethod || 'N/A',
+    subtotal,
+    delivery,
+    total,
+    items: order.orderItems.map(item => ({
+      name: item.product.name,
+      qty: item.quantity,
+      price: item.price
+    })),
+    address: {
+      name: order.user?.name || '',
+      address: order.shippingAddress || '',
+      city: '',
+      phone: order.user?.phone || '',
+    }
+  }
   return (
     <div className="min-h-screen bg-background py-12">
       <div className="container mx-auto px-4 max-w-3xl">

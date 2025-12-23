@@ -32,17 +32,11 @@ export function Navbar() {
   const setWishlistCount = useWishlistStore((state) => state.setWishlistCount)
   const router = useRouter()
   const { data: session, status } = useSession()
+  const [inventorySummary, setInventorySummary] = React.useState<{ low: number; out: number } | null>(null)
+  const isAdmin = (session?.user as any)?.role?.toString().toLowerCase() === 'admin'
 
   React.useEffect(() => {
     setMounted(true)
-    
-    // Fetch wishlist count if user is logged in
-    if (session?.user) {
-      fetch('/api/wishlist')
-        .then(res => res.json())
-        .then(data => setWishlistCount(data.items?.length || 0))
-        .catch(() => setWishlistCount(0))
-    }
     
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
@@ -51,6 +45,28 @@ export function Navbar() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  React.useEffect(() => {
+    if (!session?.user) return
+
+    fetch('/api/wishlist')
+      .then(res => res.json())
+      .then(data => setWishlistCount(data.items?.length || 0))
+      .catch(() => setWishlistCount(0))
+
+    if (isAdmin) {
+      fetch('/api/admin/inventory?type=summary')
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (data && typeof data.lowStockCount === 'number' && typeof data.outOfStockCount === 'number') {
+            setInventorySummary({ low: data.lowStockCount, out: data.outOfStockCount })
+          }
+        })
+        .catch(() => setInventorySummary(null))
+    } else {
+      setInventorySummary(null)
+    }
+  }, [session, isAdmin, setWishlistCount])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,6 +101,15 @@ export function Navbar() {
             <Link href="/support" className="hover:text-brand-golden transition-colors font-medium hidden sm:inline">💬 Help</Link>
             {session && (
               <Link href="/order-tracking" className="hover:text-brand-golden transition-colors font-medium">📦 Track Orders</Link>
+            )}
+            {isAdmin && inventorySummary && (
+              <Link
+                href="/admin/inventory"
+                className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/70 border border-yellow-500/30 text-yellow-100 shadow-md hover:border-yellow-400/60 transition-colors"
+              >
+                <span className="text-[10px] md:text-xs font-semibold">Low {inventorySummary.low}</span>
+                <span className="text-[10px] md:text-xs font-semibold text-red-200">Out {inventorySummary.out}</span>
+              </Link>
             )}
           </div>
         </div>

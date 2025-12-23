@@ -24,12 +24,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      const baseUrl = typeof window !== 'undefined'
+        ? window.location.origin
+        : (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3007');
+
+      // eslint-disable-next-line no-console
+      console.log('Computed baseUrl for auth:', baseUrl);
+
       const result = await signIn('credentials', {
         email,
         password,
         token2fa: show2fa ? token2fa : undefined,
         redirect: false,
       });
+
+      // Debug info to help diagnose issues
+      // eslint-disable-next-line no-console
+      console.log('signIn(credentials) result:', result);
 
       if (result?.error) {
         if (result.error === '2FA_REQUIRED') {
@@ -44,9 +55,12 @@ export default function LoginPage() {
         return;
       }
 
-      router.push('/account');
+      // On success, go to admin dashboard
+      router.push('/admin');
       router.refresh();
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Login error:', err);
       setError('An error occurred. Please try again.');
       setLoading(false);
     }

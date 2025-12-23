@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { createProduct, updateProduct, getProductById, getCategories } from '@/lib/api'
-import type { ApiProduct, ApiCategory } from '@/lib/api'
+import { createProduct, updateProduct, getProductById, getCategories, getInventoryHistory, updateInventoryStock } from '@/lib/api'
+import type { ApiProduct, ApiCategory, InventoryLogEntry, InventoryUpdateType } from '@/lib/api'
 
 export default function AdminProductForm() {
   const router = useRouter()
@@ -32,6 +32,14 @@ export default function AdminProductForm() {
   const [loading, setLoading] = useState(isEditing)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [inventoryError, setInventoryError] = useState<string | null>(null)
+  const [inventoryMessage, setInventoryMessage] = useState<string | null>(null)
+  const [inventoryHistory, setInventoryHistory] = useState<InventoryLogEntry[]>([])
+  const [inventoryLoading, setInventoryLoading] = useState(isEditing)
+  const [adjustQuantity, setAdjustQuantity] = useState<number>(0)
+  const [adjustType, setAdjustType] = useState<InventoryUpdateType>('ADJUSTMENT')
+  const [adjustReason, setAdjustReason] = useState('')
+  const [adjusting, setAdjusting] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +50,7 @@ export default function AdminProductForm() {
         if (isEditing && productId) {
           const product = await getProductById(productId)
           setFormData(product)
+          await loadInventoryHistory(productId)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data')
@@ -69,6 +78,53 @@ export default function AdminProductForm() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save product')
       setSubmitting(false)
+    }
+  }
+
+  const loadInventoryHistory = async (id: string) => {
+    setInventoryLoading(true)
+    setInventoryError(null)
+    try {
+      const history = await getInventoryHistory(id)
+      setInventoryHistory(history)
+    } catch (err) {
+      setInventoryError(err instanceof Error ? err.message : 'Failed to load history')
+    } finally {
+      setInventoryLoading(false)
+    }
+  }
+
+  const handleAdjustStock = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!productId) return
+    if (!adjustQuantity) {
+      setInventoryError('Quantity cannot be zero')
+      return
+    }
+
+    setAdjusting(true)
+    setInventoryError(null)
+    setInventoryMessage(null)
+
+    try {
+      await updateInventoryStock({
+        productId,
+        quantity: adjustQuantity,
+        type: adjustType,
+        reason: adjustReason || undefined,
+      })
+
+      const updated = await getProductById(productId)
+      setFormData(updated)
+      await loadInventoryHistory(productId)
+      setInventoryMessage('Stock updated')
+      setAdjustQuantity(0)
+      setAdjustReason('')
+      setAdjustType('ADJUSTMENT')
+    } catch (err) {
+      setInventoryError(err instanceof Error ? err.message : 'Failed to update stock')
+    } finally {
+      setAdjusting(false)
     }
   }
 
@@ -178,6 +234,104 @@ export default function AdminProductForm() {
               className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white"
             />
           </div>
+
+          {isEditing && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Adjust Stock</h3>
+                  {inventoryMessage && <span className="text-xs text-green-300">{inventoryMessage}</span>}
+                </div>
+                {inventoryError && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-red-300 text-sm">
+                    {inventoryError}
+                  </div>
+                )}
+                <form className="space-y-3" onSubmit={handleAdjustStock}>
+                  <div>
+                    <label className="block text-sm text-slate-300 mb-1">Quantity (use negative to deduct)</label>
+                    <input
+                      type="number"
+                      value={adjustQuantity}
+                      onChange={(e) => setAdjustQuantity(Number(e.target.value))}
+                      className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Type</label>
+                      <select
+                        value={adjustType}
+                        onChange={(e) => setAdjustType(e.target.value as InventoryUpdateType)}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                      >
+                        <option value="ADJUSTMENT">Adjustment</option>
+                        <option value="RESTOCK">Restock</option>
+                        <option value="SALE">Sale</option>
+                        <option value="RETURN">Return</option>
+                        <option value="DAMAGE">Damage</option>
+                        <option value="CORRECTION">Correction</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm text-slate-300 mb-1">Reason</label>
+                      <input
+                        type="text"
+                        value={adjustReason}
+                        onChange={(e) => setAdjustReason(e.target.value)}
+                        placeholder="Optional note"
+                        className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                      />
+                    </div>
+                  </div>
+                  <Button type="submit" disabled={adjusting} className="w-full bg-blue-600 hover:bg-blue-700">
+                    {adjusting ? 'Updating...' : 'Apply Adjustment'}
+                  </Button>
+                </form>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold">Inventory History</h3>
+                  <Button size="sm" variant="outline" className="border-slate-600 text-slate-200" onClick={() => productId && loadInventoryHistory(productId)} disabled={!!inventoryLoading}>
+                    Refresh
+                  </Button>
+                </div>
+                {inventoryLoading ? (
+                  <p className="text-slate-400 text-sm">Loading history...</p>
+                ) : inventoryHistory.length === 0 ? (
+                  <p className="text-slate-400 text-sm">No inventory events yet.</p>
+                ) : (
+                  <div className="max-h-64 overflow-y-auto border border-slate-800 rounded-lg">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-800 text-slate-300">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Change</th>
+                          <th className="px-3 py-2 text-left">Reason</th>
+                          <th className="px-3 py-2 text-left">From → To</th>
+                          <th className="px-3 py-2 text-left">When</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inventoryHistory.map((log) => (
+                          <tr key={log.id} className="border-t border-slate-800">
+                            <td className="px-3 py-2">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${log.change >= 0 ? 'bg-green-500/10 text-green-300 border border-green-500/20' : 'bg-red-500/10 text-red-300 border border-red-500/20'}`}>
+                                {log.change > 0 ? '+' : ''}{log.change}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-slate-200">{log.reason}</td>
+                            <td className="px-3 py-2 text-slate-200">{log.previousStock} → {log.newStock}</td>
+                            <td className="px-3 py-2 text-slate-400 text-xs">{new Date(log.createdAt).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Featured & Active */}
           <div className="flex gap-6">

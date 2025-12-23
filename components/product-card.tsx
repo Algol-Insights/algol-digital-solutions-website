@@ -9,6 +9,8 @@ import type { Product } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
 import { useCartStore } from "@/lib/cart-store"
 import { QuickViewModal } from "@/components/quick-view-modal"
+import { StockIndicator } from "@/components/stock-indicator"
+import { DEFAULT_LOW_STOCK_THRESHOLD, LOW_STOCK_WARNING_THRESHOLD } from "@/lib/inventory-config"
 import * as React from "react"
 
 interface ProductCardProps {
@@ -78,6 +80,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
 
+  const stockValue = typeof product.stock === "number" ? product.stock : (product.inStock === false ? 0 : undefined)
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -105,7 +109,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           {/* Image Container */}
           <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 overflow-hidden">
             <Image
-              src={product.image}
+              src={(product.image && product.image.trim() !== "")
+                ? product.image
+                : ((product.images && product.images[0] && product.images[0].trim() !== "")
+                    ? product.images[0]
+                    : "/images/products/placeholder.jpg")}
               alt={product.name}
               fill
               className="object-cover transition-all duration-500 group-hover:scale-110"
@@ -134,6 +142,15 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                 >
                   ⭐ Featured
                 </motion.span>
+              )}
+              {stockValue !== undefined && (
+                <StockIndicator
+                  stock={stockValue}
+                  variant="badge"
+                  lowThreshold={LOW_STOCK_WARNING_THRESHOLD}
+                  criticalThreshold={DEFAULT_LOW_STOCK_THRESHOLD}
+                  className="shadow-lg border border-white/10"
+                />
               )}
             </div>
 

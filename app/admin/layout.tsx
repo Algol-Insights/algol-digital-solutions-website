@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { hasPermission, normalizeRole } from '@/lib/rbac';
+import { AdminShell } from '@/components/admin/admin-shell';
 
 export default async function AdminLayout({
   children,
@@ -15,11 +17,11 @@ export default async function AdminLayout({
   }
 
   // Check if user has admin role
-  const userRole = (session.user as any).role;
-  if (userRole !== 'ADMIN') {
+  const userRole = normalizeRole((session.user as any).role);
+  if (!hasPermission(userRole, 'admin:access')) {
     // Non-admin users get redirected to home page
     redirect('/');
   }
 
-  return <>{children}</>;
+  return <AdminShell userRole={userRole}>{children}</AdminShell>;
 }

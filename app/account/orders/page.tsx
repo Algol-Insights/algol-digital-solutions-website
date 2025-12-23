@@ -1,80 +1,126 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Package, Truck, CheckCircle, Clock, Search, Eye } from "lucide-react"
+import { Package, Truck, CheckCircle, Clock, Search, Eye, AlertCircle } from "lucide-react"
+import { useSession } from "next-auth/react"
 
-// Mock data - in production, this would come from API
-const mockOrders = [
-  {
-    id: "ORD-2025-001",
-    date: "2025-12-10",
-    status: "delivered",
-    total: 1250.00,
-    items: [
-      { name: "Dell Latitude 5420 Business Laptop", quantity: 1, price: 1200.00 },
-      { name: "Laptop Bag", quantity: 1, price: 50.00 }
-    ],
-    tracking: "TRK-ZW-12345",
-    deliveryAddress: "15 Borrowdale Road, Harare"
-  },
-  {
-    id: "ORD-2025-002",
-    date: "2025-12-08",
-    status: "in-transit",
-    total: 850.00,
-    items: [
-      { name: "Hikvision 8CH CCTV System", quantity: 1, price: 850.00 }
-    ],
-    tracking: "TRK-ZW-12346",
-    deliveryAddress: "45 Samora Machel Avenue, Harare"
-  },
-  {
-    id: "ORD-2025-003",
-    date: "2025-12-05",
-    status: "processing",
-    total: 450.00,
-    items: [
-      { name: "TP-Link Archer Router", quantity: 2, price: 200.00 },
-      { name: "Network Cable (50m)", quantity: 1, price: 50.00 }
-    ],
-    tracking: null,
-    deliveryAddress: "10 Mutare Road, Harare"
+interface OrderItem {
+  id: string
+  product: {
+    id: string
+    name: string
+    image?: string
   }
-]
+  quantity: number
+  price: number
+}
 
-const statusConfig = {
-  processing: {
+interface Order {
+  id: string
+  createdAt: string
+  status: string
+  shippingAddress?: string
+  shippingCity?: string
+  orderItems: OrderItem[]
+  trackingNumber?: string
+}
+
+const statusConfig: Record<string, any> = {
+  PENDING: {
+    label: "Pending",
+    icon: Clock,
+    color: "text-gray-400",
+    bg: "bg-gray-400/10",
+    border: "border-gray-400/30"
+  },
+  PROCESSING: {
     label: "Processing",
     icon: Clock,
     color: "text-yellow-400",
     bg: "bg-yellow-400/10",
     border: "border-yellow-400/30"
   },
-  "in-transit": {
-    label: "In Transit",
+  SHIPPED: {
+    label: "Shipped",
     icon: Truck,
     color: "text-blue-400",
     bg: "bg-blue-400/10",
     border: "border-blue-400/30"
   },
-  delivered: {
+  DELIVERED: {
     label: "Delivered",
     icon: CheckCircle,
     color: "text-green-400",
     bg: "bg-green-400/10",
     border: "border-green-400/30"
+  },
+  CANCELLED: {
+    label: "Cancelled",
+    icon: AlertCircle,
+    color: "text-red-400",
+    bg: "bg-red-400/10",
+    border: "border-red-400/30"
   }
 }
 
 export default function OrdersPage() {
+  const { data: session, status } = useSession()
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
 
-  const filteredOrders = mockOrders.filter(order =>
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchOrders()
+    } else if (status === 'unauthenticated') {
+      setLoading(false)
+    }
+  }, [status])
+
+  async function fetchOrders() {
+    try {
+      const res = await fetch('/api/orders')
+      if (res.ok) {
+        const data = await res.json()
+        setOrders(data.orders || [])
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredOrders = orders.filter(order =>
     order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    order.orderItems.some(item => item.product.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-teal-medium mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading orders...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl mb-4">Please sign in to view your orders</p>
+          <Link href="/auth/login" className="text-brand-teal-medium hover:underline">
+            Sign In
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
@@ -132,21 +178,21 @@ export default function OrdersPage() {
                           </span>
                         </div>
                         <p className="text-slate-400 text-sm">
-                          Ordered on {new Date(order.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                       </div>
                       <div className="text-left md:text-right">
-                        <div className="text-2xl font-bold text-brand-golden">${order.total.toFixed(2)}</div>
-                        <p className="text-slate-400 text-sm">{order.items.length} item{order.items.length > 1 ? 's' : ''}</p>
+                        <div className="text-2xl font-bold text-brand-golden">${order.orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)}</div>
+                        <p className="text-slate-400 text-sm">{order.orderItems.length} item{order.orderItems.length > 1 ? 's' : ''}</p>
                       </div>
                     </div>
 
                     {/* Order Items */}
                     <div className="space-y-2 mb-4">
-                      {order.items.map((item, index) => (
-                        <div key={index} className="flex justify-between items-center text-sm py-2 border-t border-slate-700/30">
-                          <span className="text-slate-300">{item.quantity}x {item.name}</span>
-                          <span className="text-slate-400 font-medium">${item.price.toFixed(2)}</span>
+                      {order.orderItems.map((item) => (
+                        <div key={item.id} className="flex justify-between items-center text-sm py-2 border-t border-slate-700/30">
+                          <span className="text-slate-300">{item.quantity}x {item.product.name}</span>
+                          <span className="text-slate-400 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
@@ -154,44 +200,28 @@ export default function OrdersPage() {
                     {/* Tracking & Address */}
                     {isExpanded && (
                       <div className="mt-4 pt-4 border-t border-slate-700/30 space-y-3">
-                        {order.tracking && (
+                        {order.shippingAddress && (
                           <div className="bg-slate-700/30 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-1">
-                              <Truck className="w-4 h-4 text-brand-teal-medium" />
-                              <span className="text-sm font-medium">Tracking Number</span>
+                              <Package className="w-4 h-4 text-brand-teal-medium" />
+                              <span className="text-sm font-medium">Delivery Address</span>
                             </div>
-                            <p className="text-brand-teal-medium font-mono">{order.tracking}</p>
+                            <p className="text-slate-300">{order.shippingAddress}</p>
                           </div>
                         )}
-                        <div className="bg-slate-700/30 rounded-lg p-4">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Package className="w-4 h-4 text-brand-teal-medium" />
-                            <span className="text-sm font-medium">Delivery Address</span>
-                          </div>
-                          <p className="text-slate-300">{order.deliveryAddress}</p>
-                        </div>
                       </div>
                     )}
 
                     {/* Actions */}
                     <div className="flex flex-wrap gap-3 mt-4">
-                      <button
-                        onClick={() => setSelectedOrder(isExpanded ? null : order.id)}
+                      <Link
+                        href={`/order-confirmation?orderId=${order.id}`}
                         className="flex items-center gap-2 px-4 py-2 bg-brand-teal-medium/10 text-brand-teal-medium border border-brand-teal-medium/30 rounded-lg hover:bg-brand-teal-medium/20 transition-colors"
                       >
                         <Eye className="w-4 h-4" />
-                        {isExpanded ? 'Hide Details' : 'View Details'}
-                      </button>
-                      {order.tracking && (
-                        <Link
-                          href={`/order-tracking?tracking=${order.tracking}`}
-                          className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 text-white border border-slate-600/50 rounded-lg hover:bg-slate-600/50 transition-colors"
-                        >
-                          <Truck className="w-4 h-4" />
-                          Track Order
-                        </Link>
-                      )}
-                      {order.status === 'delivered' && (
+                        View Details
+                      </Link>
+                      {order.status === 'DELIVERED' && (
                         <Link
                           href={`/products`}
                           className="flex items-center gap-2 px-4 py-2 bg-brand-golden/10 text-brand-golden border border-brand-golden/30 rounded-lg hover:bg-brand-golden/20 transition-colors"

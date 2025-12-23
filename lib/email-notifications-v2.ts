@@ -19,9 +19,10 @@ export interface OrderEmailData {
 
 export interface ShippingEmailData {
   orderNumber: string
-  trackingNumber: string
-  carrier: string
-  estimatedDelivery: Date
+  orderId?: string
+  trackingNumber?: string
+  carrier?: string
+  estimatedDelivery?: Date
   trackingUrl?: string
 }
 
@@ -185,13 +186,13 @@ export async function sendShippingNotificationEmail(email: string, data: Shippin
                       <p>Good news! Your order <strong>${data.orderNumber}</strong> is on its way!</p>
                       
                       <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0;">
-                        <p><strong>Tracking Number:</strong> ${data.trackingNumber}</p>
-                        <p><strong>Carrier:</strong> ${data.carrier}</p>
-                        <p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery.toLocaleDateString()}</p>
+                        ${data.trackingNumber ? `<p><strong>Tracking Number:</strong> ${data.trackingNumber}</p>` : ''}
+                        ${data.carrier ? `<p><strong>Carrier:</strong> ${data.carrier}</p>` : ''}
+                        ${data.estimatedDelivery ? `<p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery.toLocaleDateString()}</p>` : ''}
                       </div>
 
                       <div style="text-align: center; margin: 30px 0;">
-                        <a href="${data.trackingUrl || `${process.env.NEXT_PUBLIC_APP_URL}/order-tracking?tracking=${data.trackingNumber}`}" 
+                        <a href="${data.trackingUrl || `${process.env.NEXT_PUBLIC_APP_URL}/order-tracking`}" 
                            style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                           Track Shipment
                         </a>
@@ -208,11 +209,11 @@ export async function sendShippingNotificationEmail(email: string, data: Shippin
     text: `
 Your Order ${data.orderNumber} Has Shipped!
 
-Tracking Number: ${data.trackingNumber}
-Carrier: ${data.carrier}
-Estimated Delivery: ${data.estimatedDelivery.toLocaleDateString()}
+${data.trackingNumber ? `Tracking Number: ${data.trackingNumber}` : ''}
+${data.carrier ? `Carrier: ${data.carrier}` : ''}
+${data.estimatedDelivery ? `Estimated Delivery: ${data.estimatedDelivery.toLocaleDateString()}` : ''}
 
-Track your shipment: ${data.trackingUrl || `${process.env.NEXT_PUBLIC_APP_URL}/order-tracking?tracking=${data.trackingNumber}`}
+Track your shipment: ${data.trackingUrl || `${process.env.NEXT_PUBLIC_APP_URL}/order-tracking`}
     `
   }
 

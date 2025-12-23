@@ -13,26 +13,28 @@ export default function AdminProducts() {
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [lowStockThreshold, setLowStockThreshold] = useState(5)
+
+  const fetchData = async (targetPage = page) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const [productsRes, categoriesRes] = await Promise.all([
+        getProducts({ page: targetPage, limit: 20 }),
+        getCategories(),
+      ])
+      setProducts(productsRes.data)
+      setTotalPages(productsRes.pagination.pages)
+      setCategories(categoriesRes)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load data')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const [productsRes, categoriesRes] = await Promise.all([
-          getProducts({ page, limit: 20 }),
-          getCategories(),
-        ])
-        setProducts(productsRes.data)
-        setTotalPages(productsRes.pagination.pages)
-        setCategories(categoriesRes)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchData()
+    fetchData(page)
   }, [page])
 
   const handleDelete = async (id: string) => {
@@ -40,7 +42,7 @@ export default function AdminProducts() {
 
     try {
       await deleteProduct(id)
-      setProducts(products.filter(p => p.id !== id))
+      await fetchData(page)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete product')
     }
@@ -49,6 +51,12 @@ export default function AdminProducts() {
   const getCategoryName = (categoryId: string) => {
     return categories.find(c => c.id === categoryId)?.name || 'Unknown'
   }
+
+  const isLowStock = (stock: number) => stock > 0 && stock <= lowStockThreshold
+  const isOutOfStock = (stock: number) => stock <= 0
+
+  const lowStockCount = products.filter(p => isLowStock(p.stock)).length
+  const outOfStockCount = products.filter(p => isOutOfStock(p.stock)).length
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
@@ -66,6 +74,32 @@ export default function AdminProducts() {
               + Add Product
             </Button>
           </Link>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 pb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-slate-300">Low-stock threshold</label>
+            <input
+              type="number"
+              min={0}
+              value={lowStockThreshold}
+              onChange={(e) => setLowStockThreshold(Math.max(0, Number(e.target.value)))}
+              className="w-20 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-slate-100"
+            />
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-500/30">⚠ {lowStockCount} low</span>
+              <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-500/10 text-red-300 border border-red-500/30">✕ {outOfStockCount} out</span>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              className="border-slate-600 text-slate-200"
+              onClick={() => fetchData(page)}
+              disabled={loading}
+            >
+              Refresh
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -106,11 +140,24 @@ export default function AdminProducts() {
                 </thead>
                 <tbody>
                   {products.map((product) => (
-                    <tr key={product.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition">
+                    <tr
+                      key={product.id}
+                      className={`border-b border-slate-700 hover:bg-slate-700/50 transition ${isOutOfStock(product.stock) ? 'bg-red-500/5' : isLowStock(product.stock) ? 'bg-yellow-500/5' : ''}`}
+                    >
                       <td className="px-6 py-4 text-sm text-white">{product.name}</td>
                       <td className="px-6 py-4 text-sm text-slate-400">{getCategoryName(product.categoryId)}</td>
                       <td className="px-6 py-4 text-sm text-white">${product.price}</td>
-                      <td className="px-6 py-4 text-sm text-white">{product.stock}</td>
+                      <td className="px-6 py-4 text-sm text-white">
+                        <div className="flex items-center gap-2">
+                          <span>{product.stock}</span>
+                          {isOutOfStock(product.stock) && (
+                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/20">Out</span>
+                          )}
+                          {isLowStock(product.stock) && !isOutOfStock(product.stock) && (
+                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-200 border border-yellow-500/20">Low</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-sm">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           product.active

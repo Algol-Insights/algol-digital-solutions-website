@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { productCache } from "@/lib/cache"
+import { productRateLimiter } from "@/lib/rate-limit"
+import { perfMonitor } from "@/lib/performance"
 
 // GET /api/products - Fetch all products with advanced filtering
 export async function GET(request: NextRequest) {
+  const started = Date.now()
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get("category")
@@ -77,7 +81,27 @@ export async function GET(request: NextRequest) {
         break
     }
 
-    // Fetch products with pagination
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+    const rate = productRateLimiter.consume(ip)
+    if (!rate.ok) {
+      const retryAfter = rate.retryAfterMs ? Math.ceil(rate.retryAfterMs / 1000).toString() : "60"
+      return NextResponse.json(
+        { error: "Rate limit exceeded" },
+        { status: 429, headers: { "Retry-After": retryAfter } }
+      )
+    }
+
+    const key = buildCacheKey(searchParams)
+    const cached = productCache.get(key)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          "X-Cache": "HIT",
+          "X-Response-Time-ms": String(Date.now() - started),
+        },
+      })
+    }
+
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -91,13 +115,28 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where }),
     ])
 
-    return NextResponse.json({
+    const payload = {
       data: products,
       pagination: {
         page,
         limit,
         total,
         pages: Math.ceil(total / limit),
+      },
+    }
+
+    productCache.set(key, payload)
+
+    perfMonitor.log('API_REQUEST', '/api/products', Date.now() - started, {
+      cached: false,
+      count: products.length,
+      page,
+    })
+
+    return NextResponse.json(payload, {
+      headers: {
+        "X-Cache": "MISS",
+        "X-Response-Time-ms": String(Date.now() - started),
       },
     })
   } catch (error) {
@@ -107,4 +146,9 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+function buildCacheKey(params: URLSearchParams) {
+  const entries = Array.from(params.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  return entries.map(([k, v]) => `${k}:${v}`).join("|") || "__all__"
 }

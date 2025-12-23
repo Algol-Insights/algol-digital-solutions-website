@@ -9,6 +9,8 @@ import { Button } from "@/components/ui-lib"
 import type { Product } from "@/lib/cart-store"
 import { useCartStore } from "@/lib/cart-store"
 import { useWishlistStore } from "@/lib/wishlist-store"
+import { StockIndicator } from "@/components/stock-indicator"
+import { DEFAULT_LOW_STOCK_THRESHOLD, LOW_STOCK_WARNING_THRESHOLD } from "@/lib/inventory-config"
 
 interface QuickViewModalProps {
   product: Product | null
@@ -48,6 +50,8 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : 0
+
+  const stockValue = typeof product.stock === "number" ? product.stock : (product.inStock === false ? 0 : undefined)
 
   return (
     <AnimatePresence>
@@ -141,12 +145,19 @@ export function QuickViewModal({ product, isOpen, onClose }: QuickViewModalProps
                     </p>
 
                     {/* Stock Status */}
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${product.inStock ? "bg-green-500" : "bg-red-500"}`} />
-                      <span className={`text-sm font-medium ${product.inStock ? "text-green-600" : "text-red-600"}`}>
-                        {product.inStock ? "In Stock" : "Out of Stock"}
-                      </span>
-                    </div>
+                    {stockValue !== undefined && (
+                      <div className="flex items-center gap-3">
+                        <StockIndicator
+                          stock={stockValue}
+                          variant="inline"
+                          lowThreshold={LOW_STOCK_WARNING_THRESHOLD}
+                          criticalThreshold={DEFAULT_LOW_STOCK_THRESHOLD}
+                        />
+                        {product.stock !== undefined && (
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{product.stock} units remaining</span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Quantity Selector */}
                     <div className="flex items-center gap-4">

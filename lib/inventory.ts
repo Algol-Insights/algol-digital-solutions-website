@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma'
+import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/lib/inventory-config'
 
 export interface InventoryUpdate {
   productId: string
@@ -263,8 +264,9 @@ export async function bulkUpdateInventory(
 /**
  * Get inventory summary statistics
  */
-export async function getInventorySummary() {
+export async function getInventorySummary(threshold: number = DEFAULT_LOW_STOCK_THRESHOLD) {
   try {
+    const safeThreshold = Number.isFinite(threshold) && threshold >= 0 ? threshold : DEFAULT_LOW_STOCK_THRESHOLD
     const [totalProducts, lowStockCount, outOfStockCount, totalValue] =
       await Promise.all([
         prisma.product.count({
@@ -274,7 +276,7 @@ export async function getInventorySummary() {
           where: {
             active: true,
             stock: {
-              lte: 10,
+              lte: safeThreshold,
               gt: 0,
             },
           },

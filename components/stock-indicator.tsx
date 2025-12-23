@@ -2,15 +2,21 @@
 
 import { AlertCircle, Package, TrendingUp } from "lucide-react"
 import { motion } from "framer-motion"
+import { DEFAULT_LOW_STOCK_THRESHOLD, LOW_STOCK_WARNING_THRESHOLD } from "@/lib/inventory-config"
 
 interface StockIndicatorProps {
   stock: number
   variant?: "badge" | "inline" | "detailed"
   className?: string
+  lowThreshold?: number
+  criticalThreshold?: number
 }
 
-export function StockIndicator({ stock, variant = "badge", className = "" }: StockIndicatorProps) {
+export function StockIndicator({ stock, variant = "badge", className = "", lowThreshold = LOW_STOCK_WARNING_THRESHOLD, criticalThreshold = DEFAULT_LOW_STOCK_THRESHOLD }: StockIndicatorProps) {
   const getStockStatus = () => {
+    const critical = Math.max(0, criticalThreshold)
+    const warning = Math.max(critical + 1, lowThreshold)
+
     if (stock === 0) {
       return {
         label: "Out of Stock",
@@ -20,7 +26,7 @@ export function StockIndicator({ stock, variant = "badge", className = "" }: Sto
         icon: AlertCircle,
         dotColor: "bg-red-500",
       }
-    } else if (stock <= 5) {
+    } else if (stock <= critical) {
       return {
         label: `Only ${stock} left!`,
         color: "text-orange-600 dark:text-orange-400",
@@ -30,7 +36,7 @@ export function StockIndicator({ stock, variant = "badge", className = "" }: Sto
         dotColor: "bg-orange-500",
         urgent: true,
       }
-    } else if (stock <= 10) {
+    } else if (stock <= warning) {
       return {
         label: "Low Stock",
         color: "text-yellow-600 dark:text-yellow-400",

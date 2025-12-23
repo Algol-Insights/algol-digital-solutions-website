@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
 import { sendEmail } from "@/lib/email"
+import { encryptString, decryptString } from '@/lib/encryption'
+import { requireAdmin, handleAdminError } from '@/lib/admin-auth'
+import { logAuditEvent } from '@/lib/audit'
 
 // Email template for admin notification
 function adminNotificationEmail(inquiry: {
@@ -129,9 +132,9 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         email,
-        phone: phone || null,
+        phone: encryptString(phone) || null,
         subject,
-        message,
+        message: encryptString(message) || '',
         service: service || null,
         status: "NEW",
       },
@@ -167,6 +170,7 @@ export async function POST(request: NextRequest) {
 // GET /api/contact - List all contact inquiries (Admin only)
 export async function GET(request: NextRequest) {
   try {
+    const admin = await requireAdmin(request, 'admin:access')
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
 
@@ -177,9 +181,34 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     })
 
-    return NextResponse.json(inquiries)
+    const decrypted = inquiries.map((i) => ({
+      ...i,
+      phone: decryptString(i.phone),
+      message: decryptString(i.message) || '',
+    }))
+
+    await logAuditEvent({
+      userId: admin.userId,
+      action: 'CONTACT_INQUIRY_LIST',
+      targetType: 'CONTACT_INQUIRY',
+      status: 'SUCCESS',
+      ip: admin.ip,
+      userAgent: admin.userAgent,
+      metadata: { status: status || 'all' },
+    })
+
+    return NextResponse.json(decrypted)
   } catch (error) {
     console.error("Failed to fetch inquiries:", error)
+    await logAuditEvent({
+      action: 'CONTACT_INQUIRY_LIST',
+      targetType: 'CONTACT_INQUIRY',
+      status: 'FAIL',
+      metadata: { message: error instanceof Error ? error.message : 'Unknown error' },
+    })
+    if ((error as any)?.status) {
+      return handleAdminError(error)
+    }
     return NextResponse.json(
       { error: "Failed to fetch inquiries" },
       { status: 500 }

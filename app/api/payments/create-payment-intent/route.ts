@@ -1,13 +1,42 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import Stripe from 'stripe'
+import { TokenBucketLimiter } from '@/lib/rate-limit'
+import { perfMonitor } from '@/lib/performance'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-11-17.clover',
-})
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-11-17.clover' as any,
+  })
+}
+
+// Rate limiter: 30 requests per minute for payment intents
+const paymentRateLimiter = new TokenBucketLimiter(30, 60000)
 
 export async function POST(request: Request) {
+  const startTime = Date.now()
+  const ip = request.headers.get('x-forwarded-for') || 'unknown'
+  
+  // Apply rate limiting
+  const rate = paymentRateLimiter.consume(ip)
+  if (!rate.ok) {
+    perfMonitor.log('API_REQUEST', '/api/payments/create-payment-intent', Date.now() - startTime, {
+      status: 429,
+      ip,
+    })
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+      { 
+        status: 429,
+        headers: {
+          'Retry-After': String(rate.retryAfterMs ? Math.ceil(rate.retryAfterMs / 1000) : 60),
+          'X-RateLimit-Remaining': String(rate.remaining),
+        }
+      }
+    )
+  }
   try {
+    const stripe = getStripe()
     const session = await getServerSession(authOptions)
 
     if (!session?.user) {
@@ -39,6 +68,13 @@ export async function POST(request: Request) {
       receipt_email: session.user.email ?? undefined,
     })
 
+    const duration = Date.now() - startTime
+    perfMonitor.log('API_REQUEST', '/api/payments/create-payment-intent', duration, {
+      status: 200,
+      amount: paymentIntent.amount,
+      ip,
+    })
+    
     return Response.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
@@ -48,6 +84,11 @@ export async function POST(request: Request) {
     })
   } catch (error: any) {
     console.error('Payment intent creation error:', error)
+    const duration = Date.now() - startTime
+    perfMonitor.log('ERROR', '/api/payments/create-payment-intent', duration, {
+      error: error.message,
+      ip,
+    })
     return new Response(
       JSON.stringify({ error: error.message || 'Payment processing failed' }),
       { status: 500 }

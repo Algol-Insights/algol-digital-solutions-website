@@ -1,20 +1,35 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { getInventorySummary } from '@/lib/inventory'
+import { DashboardWidgets } from '@/components/admin/dashboard-widgets'
+import { SavedFilters } from '@/components/admin/saved-filters'
 
-export default function AdminDashboard() {
+export default async function AdminDashboard() {
+  const summary = await getInventorySummary()
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
-      {/* Header */}
-      <div className="bg-slate-950 border-b border-slate-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-slate-400">Manage your e-commerce store</p>
+    <div className="space-y-8">
+      <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 p-6 shadow-lg shadow-slate-950/40">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
+            <p className="text-slate-400">Mobile-first shell with fast shortcuts</p>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/admin/orders">
+              <Button className="bg-blue-600 hover:bg-blue-700">View Orders</Button>
+            </Link>
+            <Link href="/admin/products">
+              <Button variant="outline" className="border-slate-700 text-white hover:border-blue-500">
+                Add Product
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <DashboardWidgets inventorySummary={summary} />
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {/* Products Management */}
           <Link href="/admin/products" className="group">
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-blue-500 hover:shadow-lg hover:shadow-blue-500/20 transition-all cursor-pointer">
@@ -63,6 +78,22 @@ export default function AdminDashboard() {
             </div>
           </Link>
 
+          {/* Sales Management */}
+          <Link href="/admin/sales" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center group-hover:bg-emerald-500/30 transition">
+                  <span className="text-2xl">💰</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Sales</h2>
+              <p className="text-slate-400 mb-4">Record transactions and view sales history</p>
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                Manage Sales →
+              </Button>
+            </div>
+          </Link>
+
           {/* Inventory Management */}
           <Link href="/admin/inventory" className="group">
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/20 transition-all cursor-pointer">
@@ -72,7 +103,11 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Inventory</h2>
-              <p className="text-slate-400 mb-4">View stock levels and inventory history</p>
+              <p className="text-slate-400 mb-2">View stock levels and inventory history</p>
+              <div className="flex items-center gap-2 mb-3 text-xs">
+                <span className="px-2 py-1 rounded-full bg-yellow-500/15 text-yellow-200 border border-yellow-500/30">Low: {summary.lowStockCount}</span>
+                <span className="px-2 py-1 rounded-full bg-red-500/15 text-red-200 border border-red-500/30">Out: {summary.outOfStockCount}</span>
+              </div>
               <Button className="w-full bg-orange-600 hover:bg-orange-700">
                 View Inventory →
               </Button>
@@ -143,7 +178,8 @@ export default function AdminDashboard() {
             </div>
           </Link>
         </div>
-      </div>
+
+      <SavedFilters />
     </div>
   )
 }

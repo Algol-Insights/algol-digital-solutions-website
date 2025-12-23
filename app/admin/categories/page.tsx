@@ -21,6 +21,7 @@ export default function AdminCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true)
+      setError(null)
       const data = await getCategories()
       setCategories(data)
     } catch (err) {
@@ -36,12 +37,12 @@ export default function AdminCategories() {
 
     try {
       const slug = newCategory.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-      const created = await createCategory({
+      await createCategory({
         name: newCategory.name,
         slug,
         description: newCategory.description || undefined,
       })
-      setCategories([...categories, created])
+      await fetchCategories()
       setNewCategory({ name: '', description: '' })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create category')
@@ -53,11 +54,11 @@ export default function AdminCategories() {
     if (!editingCategory) return
 
     try {
-      const updated = await updateCategory(editingCategory.id, {
+      await updateCategory(editingCategory.id, {
         name: editingCategory.name,
         description: editingCategory.description,
       })
-      setCategories(categories.map(c => c.id === updated.id ? updated : c))
+      await fetchCategories()
       setEditingId(null)
       setEditingCategory(null)
     } catch (err) {
@@ -70,7 +71,7 @@ export default function AdminCategories() {
 
     try {
       await deleteCategory(id)
-      setCategories(categories.filter(c => c.id !== id))
+      await fetchCategories()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete category')
     }
@@ -80,11 +81,16 @@ export default function AdminCategories() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
       {/* Header */}
       <div className="bg-slate-950 border-b border-slate-700 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/admin" className="text-slate-400 hover:text-white mb-2 inline-block">
             ← Back to Dashboard
           </Link>
-          <h1 className="text-2xl font-bold text-white">Manage Categories</h1>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="border-slate-600 text-slate-200" onClick={fetchCategories} disabled={loading}>
+              Refresh
+            </Button>
+            <h1 className="text-2xl font-bold text-white">Manage Categories</h1>
+          </div>
         </div>
       </div>
 

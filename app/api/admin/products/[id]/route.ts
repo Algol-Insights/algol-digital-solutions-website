@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db/prisma"
+import { requireAdmin, handleAdminError } from '@/lib/admin-auth'
+import { logAuditEvent } from '@/lib/audit'
 
 // PUT /api/admin/products/[id] - Update product
 export async function PUT(
@@ -7,6 +9,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const admin = await requireAdmin(request, 'admin:products:write')
     const { id } = await params
     const body = await request.json()
 
@@ -70,10 +73,29 @@ export async function PUT(
         },
       })
     }
+    await logAuditEvent({
+      userId: admin.userId,
+      action: 'PRODUCT_UPDATE',
+      targetType: 'PRODUCT',
+      targetId: id,
+      status: 'SUCCESS',
+      ip: admin.ip,
+      userAgent: admin.userAgent,
+      metadata: { stockChange },
+    })
 
     return NextResponse.json(product)
   } catch (error) {
     console.error("Error updating product:", error)
+    await logAuditEvent({
+      action: 'PRODUCT_UPDATE',
+      targetType: 'PRODUCT',
+      status: 'FAIL',
+      metadata: { message: error instanceof Error ? error.message : 'Unknown error' },
+    })
+    if ((error as any)?.status) {
+      return handleAdminError(error)
+    }
     return NextResponse.json(
       { error: "Failed to update product" },
       { status: 500 }
@@ -87,6 +109,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const admin = await requireAdmin(request, 'admin:products:write')
     const { id } = await params
 
     // Check if product exists
@@ -105,6 +128,15 @@ export async function DELETE(
     await prisma.product.delete({
       where: { id },
     })
+    await logAuditEvent({
+      userId: admin.userId,
+      action: 'PRODUCT_DELETE',
+      targetType: 'PRODUCT',
+      targetId: id,
+      status: 'SUCCESS',
+      ip: admin.ip,
+      userAgent: admin.userAgent,
+    })
 
     return NextResponse.json(
       { message: "Product deleted successfully" },
@@ -112,6 +144,15 @@ export async function DELETE(
     )
   } catch (error) {
     console.error("Error deleting product:", error)
+    await logAuditEvent({
+      action: 'PRODUCT_DELETE',
+      targetType: 'PRODUCT',
+      status: 'FAIL',
+      metadata: { message: error instanceof Error ? error.message : 'Unknown error' },
+    })
+    if ((error as any)?.status) {
+      return handleAdminError(error)
+    }
     return NextResponse.json(
       { error: "Failed to delete product" },
       { status: 500 }

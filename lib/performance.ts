@@ -2,6 +2,86 @@
  * Performance optimization utilities for the e-commerce platform
  */
 
+type MetricType = 'API_REQUEST' | 'DB_QUERY' | 'CACHE_HIT' | 'CACHE_MISS' | 'ERROR'
+
+interface Metric {
+  type: MetricType
+  path: string
+  duration?: number
+  timestamp: number
+  metadata?: Record<string, any>
+}
+
+class PerformanceMonitor {
+  private metrics: Metric[] = []
+  private maxMetrics = 1000
+
+  log(type: MetricType, path: string, duration?: number, metadata?: Record<string, any>) {
+    if (this.metrics.length >= this.maxMetrics) {
+      this.metrics.shift()
+    }
+
+    this.metrics.push({
+      type,
+      path,
+      duration,
+      timestamp: Date.now(),
+      metadata,
+    })
+  }
+
+  getMetrics(filters?: { type?: MetricType; path?: string; since?: number }) {
+    let filtered = this.metrics
+
+    if (filters?.type) {
+      filtered = filtered.filter((m) => m.type === filters.type)
+    }
+
+    if (filters?.path) {
+      filtered = filtered.filter((m) => m.path.includes(filters.path!))
+    }
+
+    if (filters?.since) {
+      filtered = filtered.filter((m) => m.timestamp >= filters.since!)
+    }
+
+    return filtered
+  }
+
+  getStats(path?: string) {
+    const filtered = path ? this.metrics.filter((m) => m.path.includes(path)) : this.metrics
+
+    const byType = filtered.reduce((acc, m) => {
+      acc[m.type] = (acc[m.type] || 0) + 1
+      return acc
+    }, {} as Record<MetricType, number>)
+
+    const durations = filtered.filter((m) => m.duration !== undefined).map((m) => m.duration!)
+    const avgDuration = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
+    const maxDuration = durations.length ? Math.max(...durations) : 0
+    const minDuration = durations.length ? Math.min(...durations) : 0
+
+    return {
+      total: filtered.length,
+      byType,
+      avgDuration: Math.round(avgDuration * 100) / 100,
+      maxDuration,
+      minDuration,
+    }
+  }
+
+  clear() {
+    this.metrics = []
+  }
+}
+
+const globalAny = global as any
+if (!globalAny.__PERF_MONITOR) {
+  globalAny.__PERF_MONITOR = new PerformanceMonitor()
+}
+
+export const perfMonitor: PerformanceMonitor = globalAny.__PERF_MONITOR
+
 /**
  * Image optimization helper
  * Generates optimized image URLs with proper sizes and formats

@@ -69,11 +69,18 @@ export default function AdminProducts() {
             </Link>
             <h1 className="text-2xl font-bold text-white">Manage Products</h1>
           </div>
-          <Link href="/admin/products/new">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              + Add Product
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/products/import">
+              <Button className="bg-purple-600 hover:bg-purple-700">
+                ✨ AI Import
+              </Button>
+            </Link>
+            <Link href="/admin/products/new">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                + Add Product
+              </Button>
+            </Link>
+          </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 pb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">

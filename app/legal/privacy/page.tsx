@@ -188,7 +188,7 @@ export default function PrivacyPolicyPage() {
               </li>
             </ul>
             <p className="text-slate-400 mt-4">
-              To exercise these rights, contact us at <a href="mailto:privacy@algoldigitalsolutions.co.zw" className="text-brand-teal-medium hover:underline">privacy@algoldigitalsolutions.co.zw</a>
+              To exercise these rights, contact us at <a href="mailto:privacy@algoldigital.com" className="text-brand-teal-medium hover:underline">privacy@algoldigital.com</a>
             </p>
           </div>
         </section>
@@ -228,10 +228,10 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl font-bold mb-4">Questions About Our Privacy Policy?</h2>
           <p className="text-white/80 mb-6">Contact our privacy team for any inquiries</p>
           <a 
-            href="mailto:privacy@algoldigitalsolutions.co.zw"
+            href="mailto:privacy@algoldigital.com"
             className="inline-flex items-center gap-2 bg-white text-brand-teal-dark px-6 py-3 rounded-lg font-medium hover:bg-slate-100 transition-colors"
           >
-            privacy@algoldigitalsolutions.co.zw
+            privacy@algoldigital.com
           </a>
         </div>
 

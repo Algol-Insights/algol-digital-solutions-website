@@ -6,6 +6,8 @@ import { SessionProvider } from "@/components/session-provider"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { CartProvider } from "@/components/cart-provider"
+import { ToastProvider } from "@/components/toast-provider"
+import AlgolChatbot from "@/components/AlgolChatbot"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -56,6 +58,8 @@ export default function RootLayout({
                 <main className="flex-1">{children}</main>
                 <Footer />
               </div>
+              <ToastProvider />
+              <AlgolChatbot />
             </CartProvider>
           </SessionProvider>
         </ThemeProvider>

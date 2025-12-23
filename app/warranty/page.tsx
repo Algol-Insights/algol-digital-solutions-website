@@ -197,7 +197,7 @@ export default function WarrantyPage() {
               +263 788 663 313
             </a>
             <a 
-              href="mailto:support@algoldigitalsolutions.co.zw"
+              href="mailto:support@algoldigital.com"
               className="inline-flex items-center gap-2 bg-brand-teal-dark text-white px-6 py-3 rounded-lg font-medium hover:bg-brand-teal-dark/80 transition-colors border border-white/20"
             >
               <Mail className="w-5 h-5" />

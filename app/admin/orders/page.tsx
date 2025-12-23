@@ -46,7 +46,7 @@ interface Order {
 const statusConfig: Record<string, { icon: any; color: string; bg: string; label: string }> = {
   PENDING: { icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/20', label: 'Pending' },
   PROCESSING: { icon: Package, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'Processing' },
-  SHIPPED: { icon: Truck, color: 'text-purple-400', bg: 'bg-purple-500/20', label: 'Shipped' },
+  SHIPPED: { icon: Truck, color: 'text-purple-400', bg: 'bg-purple-500/20', label: 'Out for Delivery' },
   DELIVERED: { icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-500/20', label: 'Delivered' },
   CANCELLED: { icon: AlertCircle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Cancelled' },
 }

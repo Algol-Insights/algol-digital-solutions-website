@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Phone, Mail, MapPin } from "lucide-react"
 import { COMPANY_INFO } from "@/lib/shared"
+import { SocialFollow } from "@/components/social-follow"
 
 const footerLinks = {
   shop: [
@@ -66,11 +67,11 @@ export function Footer() {
                 </div>
                 <span>+263 788 663 313</span>
               </a>
-              <a href="mailto:info@algoldigitalsolutions.co.zw" className="flex items-center gap-3 text-slate-400 hover:text-brand-teal-medium transition-colors group">
+              <a href="mailto:info@algoldigital.com" className="flex items-center gap-3 text-slate-400 hover:text-brand-teal-medium transition-colors group">
                 <div className="p-2 rounded-lg bg-slate-800/50 group-hover:bg-brand-teal-medium/10 transition-colors">
                   <Mail className="h-4 w-4" />
                 </div>
-                <span>sales@algolsolutions.co.zw</span>
+                <span>info@algoldigital.com</span>
               </a>
               <div className="flex items-center gap-3 text-slate-400">
                 <div className="p-2 rounded-lg bg-slate-800/50">
@@ -78,6 +79,12 @@ export function Footer() {
                 </div>
                 <span>Harare, Zimbabwe</span>
               </div>
+            </div>
+            
+            {/* Social Media Links */}
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              <h4 className="text-sm font-semibold text-white mb-4">Connect With Us</h4>
+              <SocialFollow variant="compact" showWhatsApp={true} />
             </div>
           </div>
 

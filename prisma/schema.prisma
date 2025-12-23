@@ -19,6 +19,31 @@ model Category {
   @@map("categories")
 }
 
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  longDescription String? @db.Text
+  icon        String?
+  image       String?
+  price       Float
+  pricingType String   @default("from") // "from", "fixed", "quote"
+  duration    String?
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  features    String[] @default([])
+  category    String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+  @@index([featured])
+  @@index([category])
+  @@map("services")
+}
+
 model Product {
   id                      String                @id @default(cuid())
   name                    String
@@ -37,6 +62,8 @@ model Product {
   specs                   Json                  @default("{}")
   featured                Boolean               @default(false)
   onSale                  Boolean               @default(false)
+  limitedTimeOffer        Boolean               @default(false)
+  offerEndsAt             DateTime?
   active                  Boolean               @default(true)
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt

@@ -24,7 +24,7 @@ export class EmailService {
 
   constructor() {
     this.apiKey = process.env.RESEND_API_KEY || ''
-    this.fromEmail = process.env.EMAIL_FROM || 'noreply@algoldigitalsolutions.com'
+    this.fromEmail = process.env.EMAIL_FROM || 'noreply@algoldigital.com'
   }
 
   async send(template: EmailTemplate): Promise<boolean> {

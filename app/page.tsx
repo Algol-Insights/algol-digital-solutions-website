@@ -24,6 +24,8 @@ import { AdvancedSearch } from "@/components/advanced-search"
 import { TestimonialsSection } from "@/components/testimonials"
 import { FeaturesSection } from "@/components/features-section"
 import { ProductCard } from "@/components/product-card"
+import { WhatsAppChannel } from "@/components/whatsapp-channel"
+import { SocialFollow } from "@/components/social-follow"
 
 const services = [
   {
@@ -412,6 +414,46 @@ export default function HomePage() {
               ))}
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* WhatsApp Channel & Social Media Section */}
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Stay Connected</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Join our community for exclusive deals, tech updates, and instant support
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <WhatsAppChannel />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="p-6 rounded-2xl border border-border bg-card"
+            >
+              <h3 className="text-xl font-bold mb-4">Follow Us</h3>
+              <p className="text-muted-foreground mb-6">
+                Connect with us on social media for daily tech tips, product launches, and special promotions
+              </p>
+              <SocialFollow variant="default" />
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>

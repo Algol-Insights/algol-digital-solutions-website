@@ -1,295 +1,341 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Upload, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, Upload, Wand2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-interface ImportedProduct {
-  name: string;
-  brand: string;
-  category: string;
-  price: number;
-  specs?: string;
-  stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK' | 'PREORDER';
-  variants?: Array<{ name: string; price: number }>;
+interface ParsedProduct {
+  name: string
+  description: string
+  price: number
+  stock: number
+  brand: string
+  category: string
+  specs?: Record<string, any>
+  imageUrl?: string
 }
 
-export default function ProductImportPage() {
-  const [textInput, setTextInput] = useState('');
-  const [parsedProducts, setParsedProducts] = useState<ImportedProduct[]>([]);
-  const [validationResults, setValidationResults] = useState<any>(null);
-  const [importing, setImporting] = useState(false);
-  const [importResults, setImportResults] = useState<any>(null);
+export default function AIProductImportPage() {
+  const router = useRouter()
+  const [priceList, setPriceList] = useState('')
+  const [parsing, setParsing] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [parsedProducts, setParsedProducts] = useState<ParsedProduct[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  const parseTextInput = () => {
-    try {
-      const products = parseProductList(textInput);
-      setParsedProducts(products);
-      validateProducts(products);
-    } catch (error) {
-      alert('Failed to parse product list. Please check the format.');
-      console.error(error);
+  const handleParse = async () => {
+    if (!priceList.trim()) {
+      setError('Please enter a price list')
+      return
     }
-  };
 
-  const validateProducts = async (products: ImportedProduct[]) => {
+    setParsing(true)
+    setError(null)
+    setSuccess(null)
+    setParsedProducts([])
+
     try {
-      const response = await fetch('/api/admin/products/import', {
+      const response = await fetch('/api/admin/products/ai-parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products, mode: 'preview' }),
-      });
+        body: JSON.stringify({ priceList }),
+        credentials: 'include', // Include cookies for authentication
+      })
 
-      const data = await response.json();
-      setValidationResults(data);
-    } catch (error) {
-      console.error('Validation error:', error);
-    }
-  };
-
-  const handleImport = async () => {
-    if (!validationResults || validationResults.summary.valid === 0) {
-      alert('No valid products to import');
-      return;
-    }
-
-    if (!confirm(`Import ${validationResults.summary.valid} products?`)) {
-      return;
-    }
-
-    setImporting(true);
-    try {
-      const response = await fetch('/api/admin/products/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          products: validationResults.products, 
-          mode: 'import' 
-        }),
-      });
-
-      const data = await response.json();
-      setImportResults(data);
+      // Log response details for debugging
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+      console.log('Response type:', response.type)
       
-      if (data.success) {
-        alert(`Successfully imported ${data.summary.successful} products!`);
-        setTextInput('');
-        setParsedProducts([]);
-        setValidationResults(null);
+      // Check if response is ok before parsing
+      if (!response.ok) {
+        const text = await response.text()
+        console.error('Error response:', text)
+        let errorMessage = 'Failed to parse price list'
+        
+        if (response.status === 0 || text === '') {
+          errorMessage = 'Network error or timeout. Please try again. If you are using a long price list, try with fewer items.'
+        } else if (response.status === 401) {
+          errorMessage = 'Unauthorized. Please refresh the page and try again.'
+        } else {
+          try {
+            const data = JSON.parse(text)
+            errorMessage = data.error || data.details || errorMessage
+          } catch {
+            errorMessage = text || errorMessage
+          }
+        }
+        throw new Error(errorMessage)
       }
-    } catch (error) {
-      console.error('Import error:', error);
-      alert('Failed to import products');
+
+      const data = await response.json()
+      console.log('Parsed data:', data)
+
+      if (!data.products || data.products.length === 0) {
+        throw new Error('No products found in the price list. Please check the format and try again.')
+      }
+
+      setParsedProducts(data.products)
+      setSuccess(`Successfully parsed ${data.products.length} products`)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to parse price list'
+      setError(errorMessage)
+      console.error('Parse error:', err)
     } finally {
-      setImporting(false);
-    }
-  };
-
-  return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Product Import</h1>
-        <p className="text-muted-foreground">
-          Paste your product list below. AI will parse and validate before import.
-        </p>
-      </div>
-
-      {/* Input Section */}
-      <div className="bg-card border border-border rounded-lg p-6 mb-6">
-        <label className="block mb-2 font-medium">
-          <FileText className="inline mr-2 h-5 w-5" />
-          Product List
-        </label>
-        <textarea
-          className="w-full h-96 p-4 border border-border rounded-lg font-mono text-sm bg-background"
-          placeholder="Paste your product list here..."
-          value={textInput}
-          onChange={(e) => setTextInput(e.target.value)}
-        />
-        <div className="mt-4 flex gap-3">
-          <button
-            onClick={parseTextInput}
-            disabled={!textInput.trim()}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50"
-          >
-            Parse & Validate
-          </button>
-          <button
-            onClick={() => {
-              setTextInput('');
-              setParsedProducts([]);
-              setValidationResults(null);
-              setImportResults(null);
-            }}
-            className="px-6 py-2 border border-border rounded-lg hover:bg-accent"
-          >
-            Clear
-          </button>
-        </div>
-      </div>
-
-      {/* Validation Results */}
-      {validationResults && (
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Validation Results</h2>
-          
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground">Total Products</p>
-              <p className="text-3xl font-bold">{validationResults.summary.total}</p>
-            </div>
-            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground">Valid</p>
-              <p className="text-3xl font-bold text-green-600">{validationResults.summary.valid}</p>
-            </div>
-            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground">Invalid</p>
-              <p className="text-3xl font-bold text-red-600">{validationResults.summary.invalid}</p>
-            </div>
-          </div>
-
-          {validationResults.errors.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-bold mb-2 text-red-600">
-                <XCircle className="inline mr-2 h-5 w-5" />
-                Errors
-              </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {validationResults.errors.map((error: any, idx: number) => (
-                  <div key={idx} className="bg-red-50 dark:bg-red-950 p-3 rounded border border-red-200">
-                    <p className="font-medium">{error.product.name}</p>
-                    <p className="text-sm text-red-600">{error.error}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={handleImport}
-            disabled={importing || validationResults.summary.valid === 0}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
-          >
-            {importing ? (
-              <>Processing...</>
-            ) : (
-              <>
-                <Upload className="inline mr-2 h-5 w-5" />
-                Import {validationResults.summary.valid} Products
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Import Results */}
-      {importResults && (
-        <div className="bg-card border border-border rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-4">
-            <CheckCircle className="inline mr-2 h-6 w-6 text-green-600" />
-            Import Complete
-          </h2>
-          
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-green-50 dark:bg-green-950 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground">Successful</p>
-              <p className="text-3xl font-bold text-green-600">{importResults.summary.successful}</p>
-            </div>
-            <div className="bg-red-50 dark:bg-red-950 p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground">Failed</p>
-              <p className="text-3xl font-bold text-red-600">{importResults.summary.failed}</p>
-            </div>
-          </div>
-
-          {importResults.imported.length > 0 && (
-            <div className="mb-4">
-              <h3 className="font-bold mb-2 text-green-600">Successfully Imported</h3>
-              <div className="space-y-1 max-h-64 overflow-y-auto">
-                {importResults.imported.map((item: any, idx: number) => (
-                  <div key={idx} className="text-sm bg-green-50 dark:bg-green-950 p-2 rounded">
-                    ✓ {item.name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {importResults.failed.length > 0 && (
-            <div>
-              <h3 className="font-bold mb-2 text-red-600">Failed Imports</h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {importResults.failed.map((item: any, idx: number) => (
-                  <div key={idx} className="bg-red-50 dark:bg-red-950 p-3 rounded">
-                    <p className="font-medium">{item.product.name}</p>
-                    <p className="text-sm text-red-600">{item.error}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function parseProductList(text: string): ImportedProduct[] {
-  const products: ImportedProduct[] = [];
-  const lines = text.split('\n').filter(line => line.trim());
-  
-  let currentCategory = '';
-  let currentBrand = '';
-
-  for (const line of lines) {
-    // Detect category headers
-    if (line.startsWith('## *') && line.endsWith('*')) {
-      const category = line.replace(/##\s*\*/, '').replace(/\*/, '').trim();
-      currentCategory = category;
-      currentBrand = category.split(' ')[0]; // First word is usually brand
-      continue;
-    }
-
-    // Skip non-product lines
-    if (line.startsWith('#') || line.includes('Free Delivery') || 
-        line.includes('Instock') || line.includes('Out of stock') ||
-        line.includes('Preorder') || !line.match(/\d/)) {
-      continue;
-    }
-
-    // Parse product line
-    const match = line.match(/^\d+\.\s*(.+?)\s*–\s*\$(\d+)\s*(⚪|🔵|⚫️)?/);
-    if (match) {
-      const [, nameAndSpecs, priceStr, stockEmoji] = match;
-      
-      let stockStatus: 'IN_STOCK' | 'OUT_OF_STOCK' | 'PREORDER' = 'IN_STOCK';
-      if (stockEmoji === '🔵') stockStatus = 'OUT_OF_STOCK';
-      if (stockEmoji === '⚫️') stockStatus = 'PREORDER';
-
-      products.push({
-        name: nameAndSpecs.trim(),
-        brand: currentBrand,
-        category: currentCategory,
-        price: parseInt(priceStr),
-        specs: nameAndSpecs.trim(),
-        stockStatus,
-      });
-    }
-
-    // Check for variant lines (starting with •)
-    const variantMatch = line.match(/^\s*•\s*(.+?)\s*–\s*\$(\d+)\s*(⚪|🔵|⚫️)?/);
-    if (variantMatch && products.length > 0) {
-      const [, variantName, variantPrice, stockEmoji] = variantMatch;
-      const lastProduct = products[products.length - 1];
-      
-      if (!lastProduct.variants) {
-        lastProduct.variants = [];
-      }
-      
-      lastProduct.variants.push({
-        name: variantName.trim(),
-        price: parseInt(variantPrice),
-      });
+      setParsing(false)
     }
   }
 
-  return products;
+  const handleImport = async () => {
+    if (parsedProducts.length === 0) {
+      setError('No products to import')
+      return
+    }
+
+    setImporting(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const response = await fetch('/api/admin/products/ai-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: parsedProducts }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to import products')
+      }
+
+      setSuccess(`Successfully imported ${data.imported} products`)
+      setParsedProducts([])
+      setPriceList('')
+      
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        router.push('/admin/products')
+      }, 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to import products')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const handleRemoveProduct = (index: number) => {
+    setParsedProducts(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleEditProduct = (index: number, field: keyof ParsedProduct, value: any) => {
+    setParsedProducts(prev => prev.map((product, i) => 
+      i === index ? { ...product, [field]: value } : product
+    ))
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      {/* Header */}
+      <div className="bg-slate-950 border-b border-slate-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <Link href="/admin/products" className="text-slate-400 hover:text-white mb-2 inline-flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            Back to Products
+          </Link>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Wand2 className="w-6 h-6 text-purple-400" />
+            AI Product Import
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Paste your price list and let AI extract product information automatically
+          </p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
+            <div className="text-red-400">{error}</div>
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-400 mt-0.5" />
+            <div className="text-green-400">{success}</div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Input Section */}
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Price List Input</h2>
+              <Upload className="w-5 h-5 text-slate-400" />
+            </div>
+            
+            <div className="text-sm text-slate-400 space-y-2">
+              <p>Paste your price list in any format. Examples:</p>
+              <div className="bg-slate-900 p-3 rounded border border-slate-700 font-mono text-xs">
+                <p>Dell Latitude 5420 - $850 - 10 units</p>
+                <p>Intel i5, 8GB RAM, 256GB SSD</p>
+                <p className="mt-2">HP ProBook 450 G8 | $920 | Stock: 5</p>
+                <p>Specs: i7, 16GB, 512GB</p>
+              </div>
+            </div>
+
+            <textarea
+              value={priceList}
+              onChange={(e) => setPriceList(e.target.value)}
+              placeholder="Paste your price list here..."
+              className="w-full h-96 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+              disabled={parsing}
+            />
+
+            <Button
+              onClick={handleParse}
+              disabled={parsing || !priceList.trim()}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {parsing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Parsing with AI...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Parse with AI
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Preview Section */}
+          <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">
+                Parsed Products ({parsedProducts.length})
+              </h2>
+              {parsedProducts.length > 0 && (
+                <Button
+                  onClick={handleImport}
+                  disabled={importing}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  size="sm"
+                >
+                  {importing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Import All
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            <div className="h-[600px] overflow-y-auto space-y-4">
+              {parsedProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                  <Wand2 className="w-12 h-12 mb-4 opacity-20" />
+                  <p className="text-center">
+                    No products parsed yet.<br />
+                    Paste your price list and click "Parse with AI"
+                  </p>
+                </div>
+              ) : (
+                parsedProducts.map((product, index) => (
+                  <div
+                    key={index}
+                    className="bg-slate-900 border border-slate-700 rounded-lg p-4 space-y-3"
+                  >
+                    <div className="flex items-start justify-between">
+                      <h3 className="text-white font-medium">{product.name}</h3>
+                      <button
+                        onClick={() => handleRemoveProduct(index)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <label className="text-slate-400">Price</label>
+                        <input
+                          type="number"
+                          value={product.price}
+                          onChange={(e) => handleEditProduct(index, 'price', parseFloat(e.target.value))}
+                          className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-slate-400">Stock</label>
+                        <input
+                          type="number"
+                          value={product.stock}
+                          onChange={(e) => handleEditProduct(index, 'stock', parseInt(e.target.value))}
+                          className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-slate-400">Brand</label>
+                        <input
+                          type="text"
+                          value={product.brand}
+                          onChange={(e) => handleEditProduct(index, 'brand', e.target.value)}
+                          className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-slate-400">Category</label>
+                        <input
+                          type="text"
+                          value={product.category}
+                          onChange={(e) => handleEditProduct(index, 'category', e.target.value)}
+                          className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-slate-400 text-sm">Description</label>
+                      <textarea
+                        value={product.description}
+                        onChange={(e) => handleEditProduct(index, 'description', e.target.value)}
+                        className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded text-white text-sm resize-none"
+                        rows={2}
+                      />
+                    </div>
+
+                    {product.specs && Object.keys(product.specs).length > 0 && (
+                      <div className="text-xs text-slate-400">
+                        <span className="font-medium">Specs:</span>{' '}
+                        {Object.entries(product.specs).map(([key, value]) => (
+                          <span key={key} className="inline-block mr-2">
+                            {key}: {value}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

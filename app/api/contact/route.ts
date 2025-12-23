@@ -16,7 +16,7 @@ function adminNotificationEmail(inquiry: {
   id: string
 }) {
   return {
-    to: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'admin@algoldigital.co.zw',
+    to: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'admin@algoldigital.com',
     subject: `New Contact Inquiry: ${inquiry.subject}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

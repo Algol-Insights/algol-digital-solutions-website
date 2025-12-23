@@ -23,7 +23,7 @@ export default function DeliveryPage() {
           <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-slate-700/50 hover:border-brand-teal-medium/50 transition-all">
             <Truck className="w-8 h-8 text-brand-teal-medium mb-4" />
             <h3 className="text-xl font-bold mb-2">Free in Harare</h3>
-            <p className="text-slate-400 text-sm">Complimentary delivery within Harare city limits</p>
+            <p className="text-slate-400 text-sm">Complimentary delivery within Harare, affordable rates elsewhere</p>
           </div>
           <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl p-6 border border-slate-700/50 hover:border-brand-golden/50 transition-all">
             <Clock className="w-8 h-8 text-brand-golden mb-4" />
@@ -61,7 +61,7 @@ export default function DeliveryPage() {
                   <p className="text-sm text-slate-400">City and surrounding areas</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-brand-golden font-bold text-lg">$15</div>
+                  <div className="text-brand-golden font-bold text-lg">$10</div>
                   <div className="text-xs text-slate-400">2-3 business days</div>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export default function DeliveryPage() {
                   <p className="text-sm text-slate-400">Major urban areas</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-brand-golden font-bold text-lg">$20</div>
+                  <div className="text-brand-golden font-bold text-lg">$12</div>
                   <div className="text-xs text-slate-400">3-4 business days</div>
                 </div>
               </div>
@@ -81,17 +81,17 @@ export default function DeliveryPage() {
                   <p className="text-sm text-slate-400">Masvingo, Kwekwe, Chinhoyi, etc.</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-brand-golden font-bold text-lg">$25</div>
+                  <div className="text-brand-golden font-bold text-lg">$15</div>
                   <div className="text-xs text-slate-400">4-5 business days</div>
                 </div>
               </div>
               <div className="flex justify-between items-start p-4 bg-slate-700/30 rounded-lg">
                 <div>
                   <h3 className="font-bold text-lg mb-1">Rural Areas</h3>
-                  <p className="text-sm text-slate-400">Contact us for quote</p>
+                  <p className="text-sm text-slate-400">Contact for quote</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-brand-golden font-bold text-lg">Custom</div>
+                  <div className="text-brand-golden font-bold text-lg">$15+</div>
                   <div className="text-xs text-slate-400">5-7 business days</div>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function DeliveryPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-brand-teal-medium" />
-                    Mon-Fri: 8AM-5PM, Sat: 9AM-1PM
+                    Mon-Sat: 8AM-5PM
                   </li>
                 </ul>
               </div>

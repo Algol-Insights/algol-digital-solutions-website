@@ -15,6 +15,8 @@ export async function GET(request: NextRequest) {
     const maxPrice = parseFloat(searchParams.get("maxPrice") || "999999")
     const minRating = parseFloat(searchParams.get("minRating") || "0")
     const inStockOnly = searchParams.get("inStock") === "true"
+    const limitedTimeOffer = searchParams.get("limitedTimeOffer") === "true"
+    const onSale = searchParams.get("onSale") === "true"
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "20")
     const search = searchParams.get("search")
@@ -51,6 +53,14 @@ export async function GET(request: NextRequest) {
       where.stock = {
         gt: 0,
       }
+    }
+
+    if (limitedTimeOffer) {
+      where.limitedTimeOffer = true
+    }
+
+    if (onSale) {
+      where.onSale = true
     }
 
     if (search) {

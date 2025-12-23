@@ -12,10 +12,10 @@ import { useWishlistStore } from "@/lib/wishlist-store"
 
 const navItems = [
   { name: "All Products", href: "/products" },
+  { name: "All Services", href: "/services" },
   { name: "Laptops", href: "/products?category=Laptops" },
   { name: "Networking", href: "/products?category=Networking" },
   { name: "Security", href: "/products?category=Security" },
-  { name: "Services", href: "/services" },
   { name: "Deals", href: "/deals" },
   { name: "Support", href: "/support" },
 ]

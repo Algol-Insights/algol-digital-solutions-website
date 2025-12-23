@@ -36,23 +36,27 @@ const services: Service[] = [
     id: 'hardware-software',
     icon: Laptop,
     title: 'IT Hardware & Software',
-    description: 'Complete range of laptops, desktops, gadgets, and accessories from trusted global brands. We stock both new and certified refurbished devices, plus brand new boxed original smartphones.',
+    description: 'Complete range of laptops, desktops, servers, smartphones, and accessories from trusted brands. New and certified refurbished devices with warranty.',
     features: [
-      'New & Refurbished Laptops (HP, Dell, Lenovo)',
-      'Desktop Computers & Workstations',
-      'Brand New Boxed Phones (Samsung, iPhone, Google Pixel)',
-      'Smartphones, Tablets & Smartwatches',
-      'Printers, Scanners & Peripherals',
-      'Laptop Bags, Cases & Accessories',
-      'Power Banks, Chargers & Cables',
-      'Warranty & After-Sales Support'
+      'Laptops & Desktop Computers (HP, Dell, Lenovo)',
+      'Servers & Enterprise Storage Solutions',
+      'Brand New Smartphones & Tablets',
+      'Smartwatches & Wearable Technology',
+      'Printers, Scanners & Toners',
+      'Routers, Switches & Access Points',
+      'External Hard Drives & Flash Media',
+      'Power Banks & Universal Adapters',
+      'POS Hardware & Biometric Systems',
+      'Microsoft 365 & Windows Licenses',
+      'Antivirus & Security Software',
+      'Laptop Bags, Cases & Accessories'
     ],
     benefits: [
       'Genuine products with warranty',
       'Original sealed smartphones',
-      'Competitive pricing',
+      'Competitive bulk pricing',
       'Free setup & configuration',
-      'Nationwide delivery available'
+      'Nationwide delivery'
     ],
     pricing: 'From $299',
     cta: 'Browse Products',
@@ -110,25 +114,26 @@ const services: Service[] = [
   {
     id: 'cctv-surveillance',
     icon: Camera,
-    title: 'CCTV Surveillance Systems',
-    description: 'Complete CCTV solutions for businesses and homes. From consultation to installation, we provide reliable security camera systems with mobile viewing.',
+    title: 'CCTV & Access Control',
+    description: 'Complete security solutions including CCTV surveillance and biometric access control systems for businesses, homes, and institutions.',
     features: [
-      'IP & Analog Camera Systems',
+      'IP & Analog CCTV Cameras',
       'HD & 4K Camera Options',
       'Night Vision & Motion Detection',
-      'Digital Video Recorders (DVR/NVR)',
+      'DVR/NVR Recording Systems',
+      'Biometric Access Control (Fingerprint, Face Recognition)',
+      'Time & Attendance Systems',
       'Remote Viewing via Mobile App',
-      'Professional Installation & Cabling',
-      'System Maintenance & Support'
+      'Professional Installation & Support'
     ],
     benefits: [
       'Deter crime and theft',
       'Monitor premises 24/7',
-      'Record evidence for incidents',
-      'Integration with alarms'
+      'Control access to facilities',
+      'Record evidence & attendance'
     ],
     pricing: 'From $600',
-    cta: 'View CCTV Packages',
+    cta: 'View Security Packages',
     ctaLink: '/services/cctv-systems'
   },
   {
@@ -250,6 +255,102 @@ const services: Service[] = [
     pricing: 'From $2,000',
     cta: 'View Packages & Pricing',
     ctaLink: '/services/software-development'
+  },
+  {
+    id: 'digital-marketing',
+    icon: Globe,
+    title: 'Digital Marketing & SEO',
+    description: 'Boost your online visibility and reach more customers. SEO, social media management, bulk SMS & email campaigns to grow your business online.',
+    features: [
+      'Search Engine Optimization (SEO)',
+      'Social Media Management & Marketing',
+      'Content Creation & Strategy',
+      'Google Ads & Facebook Ads',
+      'Bulk SMS & Email Marketing',
+      'Brand Strategy & Digital Presence',
+      'Analytics & Performance Tracking'
+    ],
+    benefits: [
+      'Increase website traffic',
+      'Generate quality leads',
+      'Build brand awareness',
+      'Measurable ROI'
+    ],
+    pricing: 'From $200/month',
+    cta: 'View Marketing Packages',
+    ctaLink: '/contact'
+  },
+  {
+    id: 'automation-ai',
+    icon: Code,
+    title: 'Business Automation & AI',
+    description: 'Automate repetitive tasks with chatbots, AI integration, custom ERP/CRM systems, and workflow automation to streamline operations.',
+    features: [
+      'Business Process Automation',
+      'Chatbots & AI Integration',
+      'Custom ERP & CRM Systems',
+      'Workflow Automation Tools',
+      'Data Analytics & Reporting',
+      'Document Management Systems',
+      'Software Integration Services'
+    ],
+    benefits: [
+      'Save time and reduce costs',
+      'Eliminate manual errors',
+      'Improve customer service',
+      'Scale efficiently'
+    ],
+    pricing: 'From $1,500',
+    cta: 'Explore Automation',
+    ctaLink: '/contact'
+  },
+  {
+    id: 'hosting-domains',
+    icon: Cloud,
+    title: 'Web Hosting & Domains',
+    description: 'Reliable web hosting, domain registration, and email hosting services. Fast, secure hosting with 99.9% uptime and data backup.',
+    features: [
+      'Domain Registration (.zw, .com, .co.zw)',
+      'Shared & VPS Hosting',
+      'WordPress Hosting',
+      'Business Email Hosting',
+      'SSL Certificates & Security',
+      'Daily Backups & Cloud Storage',
+      'Free Website Migration'
+    ],
+    benefits: [
+      'Fast loading speeds',
+      'Professional email',
+      'Secure & reliable',
+      '24/7 support'
+    ],
+    pricing: 'From $5/month',
+    cta: 'View Hosting Plans',
+    ctaLink: '/contact'
+  },
+  {
+    id: 'graphic-design',
+    icon: Laptop,
+    title: 'Graphic Design & Branding',
+    description: 'Professional logo design, brand identity, marketing materials, and complete digital brand strategy to elevate your business.',
+    features: [
+      'Logo Design & Brand Identity',
+      'Business Cards & Stationery',
+      'Brochures & Flyers',
+      'Social Media Graphics',
+      'Packaging & Label Design',
+      'Brand Guidelines',
+      'Digital & Print Design'
+    ],
+    benefits: [
+      'Stand out from competitors',
+      'Professional brand image',
+      'Consistent visual identity',
+      'High-quality deliverables'
+    ],
+    pricing: 'From $100',
+    cta: 'View Portfolio',
+    ctaLink: '/contact'
   },
   {
     id: 'corporate-solutions',
@@ -389,9 +490,9 @@ export default function ServicesPage() {
                             <Phone className="h-4 w-4" />
                             +263 788 663 313
                           </a>
-                          <a href="mailto:info@algoldigital.co.zw" className="flex items-center gap-2 hover:text-brand-teal-medium transition-colors">
+                          <a href="mailto:info@algoldigital.com" className="flex items-center gap-2 hover:text-brand-teal-medium transition-colors">
                             <Mail className="h-4 w-4" />
-                            info@algoldigital.co.zw
+                            info@algoldigital.com
                           </a>
                         </div>
                       </div>

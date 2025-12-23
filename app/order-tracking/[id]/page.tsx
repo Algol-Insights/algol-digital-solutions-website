@@ -77,7 +77,7 @@ const orderStatusSteps = [
   { status: 'PENDING', label: 'Order Placed', icon: Clock },
   { status: 'CONFIRMED', label: 'Confirmed', icon: CheckCircle },
   { status: 'PROCESSING', label: 'Processing', icon: Package },
-  { status: 'SHIPPED', label: 'Shipped', icon: Truck },
+  { status: 'SHIPPED', label: 'Out for Delivery', icon: Truck },
   { status: 'DELIVERED', label: 'Delivered', icon: CheckCircle },
 ];
 

@@ -153,7 +153,7 @@ export default function OrderDetailPage() {
         timestamp: new Date(new Date(order.createdAt).getTime() + 3600000).toISOString(),
         status: 'PROCESSING',
         label: 'Processing',
-        description: 'Order is being prepared for shipment',
+        description: 'Order is being prepared for delivery',
       })
     }
 
@@ -161,8 +161,8 @@ export default function OrderDetailPage() {
       events.push({
         timestamp: new Date(new Date(order.createdAt).getTime() + 86400000).toISOString(),
         status: 'SHIPPED',
-        label: 'Shipped',
-        description: `Order is on its way (Est. ${order.estimatedDelivery ? new Date(order.estimatedDelivery).toLocaleDateString() : 'TBD'})`,
+        label: 'Out for Delivery',
+        description: `Order is on its way to you (Est. ${order.estimatedDelivery ? new Date(order.estimatedDelivery).toLocaleDateString() : 'TBD'})`,
       })
     }
 

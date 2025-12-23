@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Phone, Mail, MapPin, Send, CheckCircle2, Loader2 } from 'lucide-react'
+import { WhatsAppChannel } from '@/components/whatsapp-channel'
+import { SocialFollow } from '@/components/social-follow'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -140,12 +142,12 @@ export default function ContactPage() {
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Email Us</h3>
               <p className="text-muted-foreground mb-3">24/7 Response Time</p>
-              <a href="mailto:info@algoldigital.co.zw" className="text-brand-golden hover:text-brand-teal-medium font-medium">
-                info@algoldigital.co.zw
+              <a href="mailto:info@algoldigital.com" className="text-brand-golden hover:text-brand-teal-medium font-medium">
+                info@algoldigital.com
               </a>
               <br />
-              <a href="mailto:support@algoldigital.co.zw" className="text-brand-golden hover:text-brand-teal-medium font-medium">
-                support@algoldigital.co.zw
+              <a href="mailto:support@algoldigital.com" className="text-brand-golden hover:text-brand-teal-medium font-medium">
+                support@algoldigital.com
               </a>
             </motion.div>
 
@@ -160,7 +162,7 @@ export default function ContactPage() {
                 <MapPin className="h-6 w-6 text-green-500" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Visit Us</h3>
-              <p className="text-muted-foreground mb-3">Mon-Fri 8AM-5PM, Sat 9AM-1PM</p>
+              <p className="text-muted-foreground mb-3">Mon-Sat 8AM-5PM</p>
               <p className="text-foreground font-medium">
                 123 Samora Machel Avenue<br />
                 Harare, Zimbabwe
@@ -363,12 +365,8 @@ export default function ContactPage() {
                 <h3 className="text-lg font-semibold text-foreground mb-3">Business Hours</h3>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex justify-between">
-                    <span>Monday - Friday:</span>
+                    <span>Monday - Saturday:</span>
                     <span className="font-medium text-foreground">8:00 AM - 5:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saturday:</span>
-                    <span className="font-medium text-foreground">9:00 AM - 1:00 PM</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Sunday:</span>
@@ -376,8 +374,25 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Social Media Follow */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Connect With Us</h3>
+                <SocialFollow variant="inline" showWhatsApp={true} />
+              </div>
             </motion.div>
           </div>
+
+          {/* WhatsApp Channel Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mt-16"
+          >
+            <WhatsAppChannel variant="banner" />
+          </motion.div>
         </div>
       </section>
     </div>

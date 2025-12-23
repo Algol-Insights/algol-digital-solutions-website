@@ -94,8 +94,7 @@ export default function AdminProductForm() {
     }
   }
 
-  const handleAdjustStock = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAdjustStock = async () => {
     if (!productId) return
     if (!adjustQuantity) {
       setInventoryError('Quantity cannot be zero')
@@ -247,7 +246,7 @@ export default function AdminProductForm() {
                     {inventoryError}
                   </div>
                 )}
-                <form className="space-y-3" onSubmit={handleAdjustStock}>
+                <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-slate-300 mb-1">Quantity (use negative to deduct)</label>
                     <input
@@ -284,10 +283,10 @@ export default function AdminProductForm() {
                       />
                     </div>
                   </div>
-                  <Button type="submit" disabled={adjusting} className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button type="button" onClick={handleAdjustStock} disabled={adjusting} className="w-full bg-blue-600 hover:bg-blue-700">
                     {adjusting ? 'Updating...' : 'Apply Adjustment'}
                   </Button>
-                </form>
+                </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-700 rounded-lg p-4 space-y-3">
@@ -334,25 +333,60 @@ export default function AdminProductForm() {
           )}
 
           {/* Featured & Active */}
-          <div className="flex gap-6">
-            <label className="flex items-center text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.featured || false}
-                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                className="mr-2"
-              />
-              Featured Product
-            </label>
-            <label className="flex items-center text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.active !== false}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                className="mr-2"
-              />
-              Active
-            </label>
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-white">Product Status</h2>
+            <div className="flex flex-wrap gap-6">
+              <label className="flex items-center text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.featured || false}
+                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                  className="mr-2"
+                />
+                Featured Product
+              </label>
+              <label className="flex items-center text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.active !== false}
+                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                  className="mr-2"
+                />
+                Active
+              </label>
+              <label className="flex items-center text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(formData as any).limitedTimeOffer || false}
+                  onChange={(e) => setFormData({ ...formData, limitedTimeOffer: e.target.checked } as any)}
+                  className="mr-2"
+                />
+                Limited Time Offer
+              </label>
+              <label className="flex items-center text-slate-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(formData as any).onSale || false}
+                  onChange={(e) => setFormData({ ...formData, onSale: e.target.checked } as any)}
+                  className="mr-2"
+                />
+                On Sale
+              </label>
+            </div>
+
+            {/* Limited Time Offer End Date */}
+            {(formData as any).limitedTimeOffer && (
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Offer Ends At</label>
+                <input
+                  type="datetime-local"
+                  value={(formData as any).offerEndsAt ? new Date((formData as any).offerEndsAt).toISOString().slice(0, 16) : ''}
+                  onChange={(e) => setFormData({ ...formData, offerEndsAt: e.target.value ? new Date(e.target.value).toISOString() : null } as any)}
+                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                />
+                <p className="text-xs text-slate-400 mt-1">Set when this limited time offer expires</p>
+              </div>
+            )}
           </div>
 
           {/* Buttons */}

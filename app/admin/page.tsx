@@ -62,6 +62,22 @@ export default async function AdminDashboard() {
             </div>
           </Link>
 
+          {/* Services Management */}
+          <Link href="/admin/services" className="group">
+            <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/20 transition-all cursor-pointer">
+              <div className="mb-4">
+                <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center group-hover:bg-cyan-500/30 transition">
+                  <span className="text-2xl">⚙️</span>
+                </div>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Services</h2>
+              <p className="text-slate-400 mb-4">Manage service offerings and packages</p>
+              <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                Manage Services →
+              </Button>
+            </div>
+          </Link>
+
           {/* Orders Management */}
           <Link href="/admin/orders" className="group">
             <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20 transition-all cursor-pointer">

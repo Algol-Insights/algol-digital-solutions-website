@@ -5,9 +5,12 @@ import Image from "next/image"
 import { Button } from "@/components/ui-lib"
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft, ArrowRight, Package } from "lucide-react"
 import { useCartStore } from "@/lib/cart-store"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { useToast } from "@/components/toast"
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore()
+  const toast = useToast()
 
   if (items.length === 0) {
     return (
@@ -35,8 +38,8 @@ export default function CartPage() {
   }
 
   const subtotal = getTotal()
-  const shipping = subtotal > 500 ? 0 : 25
-  const total = subtotal + shipping
+  const shipping = null // Will be determined at checkout based on location
+  const total = subtotal // Delivery added at checkout
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,7 +90,10 @@ export default function CartPage() {
                       <h3 className="font-semibold line-clamp-2">{item.name}</h3>
                     </div>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => {
+                        removeItem(item.id)
+                        toast.success('Item removed from cart')
+                      }}
                       className="p-2 text-muted-foreground hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -150,20 +156,14 @@ export default function CartPage() {
                   <span className="font-medium">${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className="font-medium">
-                    {shipping === 0 ? (
-                      <span className="text-green-600">FREE</span>
-                    ) : (
-                      `$${shipping}`
-                    )}
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="font-medium text-muted-foreground">
+                    ---
                   </span>
                 </div>
-                {shipping > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Free shipping on orders over $500
-                  </p>
-                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  Free in Harare, $10-15 other areas (calculated at checkout)
+                </p>
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between">
                     <span className="font-bold">Total</span>
@@ -184,15 +184,21 @@ export default function CartPage() {
                 <p className="text-sm text-muted-foreground text-center mb-3">
                   We Accept
                 </p>
-                <div className="flex justify-center gap-4">
+                <div className="flex flex-wrap justify-center gap-2">
                   <div className="px-3 py-1 rounded bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 text-xs font-medium">
                     EcoCash
+                  </div>
+                  <div className="px-3 py-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-medium">
+                    InnBucks
                   </div>
                   <div className="px-3 py-1 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-medium">
                     Bank Transfer
                   </div>
                   <div className="px-3 py-1 rounded bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 text-xs font-medium">
                     Cash on Delivery
+                  </div>
+                  <div className="px-3 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium">
+                    Other
                   </div>
                 </div>
               </div>

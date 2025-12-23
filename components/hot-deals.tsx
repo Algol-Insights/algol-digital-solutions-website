@@ -119,7 +119,7 @@ function DealCard({ deal }: { deal: Deal }) {
       </motion.div>
 
       {/* Product Image */}
-      <Link href={`/products/${deal.slug}`}>
+      <Link href={`/products/${deal.id}`}>
         <div className="relative h-64 bg-gray-100 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
             <ShoppingCart className="h-24 w-24 text-gray-300" />
@@ -211,7 +211,8 @@ export function HotDealsSection() {
   useEffect(() => {
     async function fetchHotDeals() {
       try {
-        const response = await fetch('/api/products?onSale=true&limit=8')
+        // Fetch products marked as limited time offers
+        const response = await fetch('/api/products?limitedTimeOffer=true&active=true&limit=8')
         const data = await response.json()
         
         const formattedDeals: Deal[] = data.data.map((product: any) => ({
@@ -221,12 +222,12 @@ export function HotDealsSection() {
           price: product.price,
           originalPrice: product.originalPrice || product.price * 1.3,
           discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0,
-          rating: product.rating || 0,
+          rating: product.rating || 4.5,
           reviews: product.reviewCount || 0,
           sold: Math.floor(Math.random() * 300),
           stock: product.stock,
           image: product.image || '/products/placeholder.jpg',
-          endsAt: new Date(Date.now() + (Math.floor(Math.random() * 10) + 2) * 60 * 60 * 1000),
+          endsAt: product.offerEndsAt ? new Date(product.offerEndsAt) : new Date(Date.now() + 72 * 60 * 60 * 1000), // Default 3 days
           badge: product.stock < 20 ? 'LIMITED' : (product.featured ? 'HOT' : 'NEW'),
           slug: product.slug
         }))

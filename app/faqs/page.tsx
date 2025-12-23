@@ -11,7 +11,7 @@ const faqs = [
     questions: [
       {
         q: "What payment methods do you accept?",
-        a: "We accept cash on delivery, EcoCash, Innbucks, bank transfers, Visa, and Mastercard. For corporate clients, we also offer 30-day payment terms upon credit approval."
+        a: "We accept EcoCash, InnBucks, bank transfers (RTGS and USD), cash on delivery, Visa, Mastercard, and other payment arrangements. For corporate clients, we also offer 30-day payment terms upon credit approval."
       },
       {
         q: "Can I change or cancel my order?",
@@ -28,11 +28,11 @@ const faqs = [
     ]
   },
   {
-    category: "Delivery & Shipping",
+    category: "Delivery",
     questions: [
       {
         q: "Is delivery free?",
-        a: "Yes! Delivery is completely free for all orders within Harare. For other cities, delivery fees range from $15-$25 depending on location. Check our Delivery Information page for full details."
+        a: "Delivery is completely free within Harare. For other cities and towns across Zimbabwe, delivery costs range from $10-15 depending on your location."
       },
       {
         q: "How long does delivery take?",
@@ -40,11 +40,11 @@ const faqs = [
       },
       {
         q: "Can I collect my order in person?",
-        a: "Yes! Store pickup is available at our Harare office. Your order will be ready for collection within 2-4 hours during business hours (Mon-Fri: 8AM-5PM, Sat: 9AM-1PM)."
+        a: "Yes! Store pickup is available at our Harare office. Your order will be ready for collection within 2-4 hours during business hours (Mon-Sat: 8AM-5PM)."
       },
       {
         q: "Do you deliver to rural areas?",
-        a: "Yes, we deliver nationwide including rural areas. Delivery to remote locations is arranged on a case-by-case basis. Contact us for a custom delivery quote."
+        a: "Yes, we deliver nationwide including rural areas. Delivery to remote locations is arranged on a case-by-case basis. Contact us for specific delivery timeframes."
       }
     ]
   },
@@ -120,7 +120,7 @@ const faqs = [
       },
       {
         q: "Can you provide quotes for tenders?",
-        a: "Absolutely! We regularly participate in tenders and can provide detailed technical and financial proposals. Email your tender documents to sales@algolsolutions.co.zw"
+        a: "Absolutely! We regularly participate in tenders and can provide detailed technical and financial proposals. Email your tender documents to sales@algoldigital.com"
       },
       {
         q: "Do you offer maintenance contracts?",

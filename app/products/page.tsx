@@ -10,6 +10,8 @@ import { ProductSort } from "@/components/product-sort"
 import { ComparisonBar } from "@/components/comparison-bar"
 import { SearchBarEnhanced } from "@/components/search-bar-enhanced"
 import { Button } from "@/components/ui-lib"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { ProductsGridSkeleton } from "@/components/loading-states"
 
 interface Product {
   id: string
@@ -190,15 +192,7 @@ function ProductsPageContent() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="bg-muted rounded-xl h-64 mb-4" />
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
-                  </div>
-                ))}
-              </div>
+              <ProductsGridSkeleton count={6} />
             ) : products.length === 0 ? (
               <div className="text-center py-12">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
@@ -252,8 +246,10 @@ function ProductsPageContent() {
 
 export default function ProductsPageNew() {
   return (
-    <Suspense fallback={<ProductsLoadingFallback />}>
-      <ProductsPageContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<ProductsLoadingFallback />}>
+        <ProductsPageContent />
+      </Suspense>
+    </ErrorBoundary>
   )
 }

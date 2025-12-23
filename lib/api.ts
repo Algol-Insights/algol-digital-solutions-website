@@ -31,6 +31,9 @@ export interface ApiProduct {
   featured?: boolean
   active?: boolean
   inStock?: boolean
+  onSale?: boolean
+  limitedTimeOffer?: boolean
+  offerEndsAt?: string | null
   categoryId: string
   category?: {
     id: string

@@ -19,9 +19,39 @@ import {
   Loader2
 } from "lucide-react"
 import { useCartStore } from "@/lib/cart-store"
+import { sendOrderToWhatsApp, getPaymentMethodName } from "@/lib/whatsapp-notifications"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { useToast } from "@/components/toast"
 
-type PaymentMethod = "ecocash" | "bank" | "cod"
+type PaymentMethod = "ecocash" | "innbucks" | "bank" | "cod" | "other"
 type DeliveryOption = "standard" | "express" | "pickup"
+
+// Function to calculate delivery cost based on location
+const getDeliveryPrice = (city: string, province: string, option: DeliveryOption): number => {
+  if (option === "pickup") return 0
+  
+  const cityLower = city.toLowerCase()
+  const provinceLower = province.toLowerCase()
+  
+  // Harare is FREE
+  if (cityLower.includes("harare") || provinceLower === "harare") {
+    return 0
+  }
+  
+  // Bulawayo
+  if (cityLower.includes("bulawayo") || provinceLower === "bulawayo") {
+    return 10
+  }
+  
+  // Gweru, Mutare
+  if (cityLower.includes("gweru") || cityLower.includes("mutare") || 
+      provinceLower === "midlands" || provinceLower === "manicaland") {
+    return 12
+  }
+  
+  // Other cities and provinces
+  return 15
+}
 
 const deliveryOptions = [
   { id: "standard", name: "Harare Delivery", description: "1 day delivery", price: 0 },
@@ -33,6 +63,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const { items, getTotal, clearCart } = useCartStore()
+  const toast = useToast()
   const [isMounted, setIsMounted] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [orderComplete, setOrderComplete] = useState(false)
@@ -57,9 +88,30 @@ export default function CheckoutPage() {
 
   const subtotal = getTotal()
   const selectedDelivery = deliveryOptions.find(d => d.id === deliveryOption)!
-  const shipping = subtotal > 500 && deliveryOption === "standard" ? 0 : selectedDelivery.price
+  
+  // Calculate dynamic delivery price based on location
+  const shipping = deliveryOption === "pickup" 
+    ? 0 
+    : getDeliveryPrice(formData.city, formData.province, deliveryOption)
+  
   const tax = 0
   const total = subtotal + shipping
+
+  // Auto-select delivery option based on city and province
+  useEffect(() => {
+    if (formData.city && formData.province && deliveryOption !== "pickup") {
+      const cityLower = formData.city.toLowerCase()
+      const provinceLower = formData.province.toLowerCase()
+      
+      // Check if it's Harare city or Harare province
+      if (cityLower.includes("harare") || provinceLower === "harare") {
+        setDeliveryOption("standard")
+      } else {
+        // All other cities and provinces get express delivery
+        setDeliveryOption("express")
+      }
+    }
+  }, [formData.city, formData.province, deliveryOption])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
@@ -86,7 +138,7 @@ export default function CheckoutPage() {
         })),
         subtotal,
         tax,
-        shipping: selectedDelivery.price,
+        shipping, // Use the calculated dynamic shipping cost
         shippingAddress: {
           addressLine1: formData.address,
           city: formData.city,
@@ -114,10 +166,44 @@ export default function CheckoutPage() {
       const result = await response.json();
       setOrderNumber(result.orderNumber);
       setOrderComplete(true);
+      
+      toast.success('Order placed successfully! Redirecting to WhatsApp...');
+      
+      // Send order details to sales team via WhatsApp
+      sendOrderToWhatsApp({
+        orderNumber: result.orderNumber,
+        customerName: `${formData.firstName} ${formData.lastName}`,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        items: items.map(item => {
+          // Find variant name if variantId exists
+          const variantName = item.variantId && item.variants 
+            ? item.variants.find(v => v.id === item.variantId)?.name 
+            : undefined;
+          
+          return {
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            variant: variantName,
+          };
+        }),
+        subtotal,
+        shipping,
+        total,
+        paymentMethod: getPaymentMethodName(paymentMethod),
+        deliveryAddress: {
+          address: formData.address,
+          city: formData.city,
+          province: formData.province,
+        },
+        notes: formData.notes,
+      });
+      
       clearCart();
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Please try again.');
+      toast.error('Failed to place order. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -305,41 +391,47 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {deliveryOptions.map((option) => (
-                    <label
-                      key={option.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all ${
-                        deliveryOption === option.id
-                          ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50"
-                          : "border-border hover:border-violet-300"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="delivery"
-                          value={option.id}
-                          checked={deliveryOption === option.id}
-                          onChange={() => setDeliveryOption(option.id as DeliveryOption)}
-                          className="sr-only"
-                        />
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          deliveryOption === option.id ? "border-violet-500" : "border-muted-foreground"
-                        }`}>
-                          {deliveryOption === option.id && (
-                            <div className="w-3 h-3 rounded-full bg-violet-500" />
-                          )}
+                  {deliveryOptions.map((option) => {
+                    const optionPrice = option.id === "pickup" 
+                      ? 0 
+                      : getDeliveryPrice(formData.city, formData.province, option.id as DeliveryOption)
+                    
+                    return (
+                      <label
+                        key={option.id}
+                        className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all ${
+                          deliveryOption === option.id
+                            ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50"
+                            : "border-border hover:border-violet-300"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="delivery"
+                            value={option.id}
+                            checked={deliveryOption === option.id}
+                            onChange={() => setDeliveryOption(option.id as DeliveryOption)}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            deliveryOption === option.id ? "border-violet-500" : "border-muted-foreground"
+                          }`}>
+                            {deliveryOption === option.id && (
+                              <div className="w-3 h-3 rounded-full bg-violet-500" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">{option.name}</p>
+                            <p className="text-sm text-muted-foreground">{option.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{option.name}</p>
-                          <p className="text-sm text-muted-foreground">{option.description}</p>
-                        </div>
-                      </div>
-                      <span className="font-medium">
-                        {option.price === 0 ? "FREE" : `$${option.price}`}
-                      </span>
-                    </label>
-                  ))}
+                        <span className="font-medium">
+                          {optionPrice === 0 ? "FREE" : `$${optionPrice}`}
+                        </span>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -382,6 +474,39 @@ export default function CheckoutPage() {
                       </div>
                     </div>
                     <div className="px-3 py-1 rounded bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 text-xs font-medium">
+                      Instant
+                    </div>
+                  </label>
+
+                  <label
+                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all ${
+                      paymentMethod === "innbucks"
+                        ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50"
+                        : "border-border hover:border-violet-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="innbucks"
+                        checked={paymentMethod === "innbucks"}
+                        onChange={() => setPaymentMethod("innbucks")}
+                        className="sr-only"
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        paymentMethod === "innbucks" ? "border-violet-500" : "border-muted-foreground"
+                      }`}>
+                        {paymentMethod === "innbucks" && (
+                          <div className="w-3 h-3 rounded-full bg-violet-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">InnBucks</p>
+                        <p className="text-sm text-muted-foreground">Pay via mobile money</p>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-xs font-medium">
                       Instant
                     </div>
                   </label>
@@ -447,6 +572,37 @@ export default function CheckoutPage() {
                     </div>
                     <Truck className="h-5 w-5 text-muted-foreground" />
                   </label>
+
+                  <label
+                    className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all ${
+                      paymentMethod === "other"
+                        ? "border-violet-500 bg-violet-50 dark:bg-violet-950/50"
+                        : "border-border hover:border-violet-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="other"
+                        checked={paymentMethod === "other"}
+                        onChange={() => setPaymentMethod("other")}
+                        className="sr-only"
+                      />
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        paymentMethod === "other" ? "border-violet-500" : "border-muted-foreground"
+                      }`}>
+                        {paymentMethod === "other" && (
+                          <div className="w-3 h-3 rounded-full bg-violet-500" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium">Other</p>
+                        <p className="text-sm text-muted-foreground">Contact us for arrangement</p>
+                      </div>
+                    </div>
+                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  </label>
                 </div>
               </div>
 
@@ -501,7 +657,7 @@ export default function CheckoutPage() {
                     <span>${subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Shipping</span>
+                    <span className="text-muted-foreground">Delivery</span>
                     <span>
                       {shipping === 0 ? (
                         <span className="text-green-600">FREE</span>

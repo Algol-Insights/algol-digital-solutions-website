@@ -222,7 +222,7 @@ export default function OrderTrackingPage() {
               }`}
             >
               <div className="text-2xl font-bold text-purple-600">{stats.shipped}</div>
-              <div className="text-sm text-gray-600">Shipped</div>
+              <div className="text-sm text-gray-600">Out for Delivery</div>
             </button>
             <button
               onClick={() => setFilter('delivered')}

@@ -89,7 +89,7 @@ export default function TermsOfServicePage() {
               <strong className="text-white">Pricing:</strong> All prices are displayed in USD unless otherwise stated. Prices are subject to change without notice. We make every effort to ensure pricing accuracy, but errors may occur. In case of a pricing error, we will notify you and offer the option to proceed at the correct price or cancel your order.
             </p>
             <p>
-              <strong className="text-white">Payment:</strong> Payment is due at the time of order unless other arrangements have been made. We accept EcoCash, Innbucks, bank transfers, Visa, Mastercard, and cash on delivery. Corporate clients may be eligible for credit terms upon approval.
+              <strong className="text-white">Payment:</strong> Payment is due at the time of order unless other arrangements have been made. We accept EcoCash, InnBucks, bank transfers (RTGS and USD), cash on delivery, Visa, Mastercard, and other payment arrangements. Corporate clients may be eligible for credit terms upon approval.
             </p>
             <p>
               <strong className="text-white">Taxes:</strong> All applicable taxes and duties will be added to your order total where required by law.
@@ -232,10 +232,10 @@ export default function TermsOfServicePage() {
           <h2 className="text-2xl font-bold mb-4">Questions About These Terms?</h2>
           <p className="text-white/80 mb-6">Contact our legal team for clarification</p>
           <a 
-            href="mailto:legal@algoldigitalsolutions.co.zw"
+            href="mailto:legal@algoldigital.com"
             className="inline-flex items-center gap-2 bg-white text-brand-teal-dark px-6 py-3 rounded-lg font-medium hover:bg-slate-100 transition-colors"
           >
-            legal@algoldigitalsolutions.co.zw
+            legal@algoldigital.com
           </a>
         </div>
 

@@ -51,7 +51,7 @@ let transporter: nodemailer.Transporter | null = null
 function getTransporter(): nodemailer.Transporter {
   if (!transporter) {
     const emailService = process.env.EMAIL_SERVICE || 'gmail'
-    const emailUser = process.env.EMAIL_USER || 'noreply@algoldigitalsolutions.com'
+    const emailUser = process.env.EMAIL_USER || 'noreply@algoldigital.com'
     const emailPassword = process.env.EMAIL_PASSWORD || ''
 
     transporter = nodemailer.createTransport({
@@ -111,7 +111,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
             </div>
             <div class="content">
               <p>Hi ${data.customerName},</p>
-              <p>Thank you for your order! We're preparing it for shipment.</p>
+              <p>Thank you for your order! We're preparing it for delivery.</p>
               
               <div class="order-details">
                 <h2>Order Details</h2>
@@ -126,7 +126,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
                 <div class="summary">
                   <p><strong>Subtotal:</strong> $${data.subtotal.toFixed(2)}</p>
                   <p><strong>Tax:</strong> $${data.tax.toFixed(2)}</p>
-                  <p><strong>Shipping:</strong> $${data.shipping.toFixed(2)}</p>
+                  <p><strong>Delivery:</strong> ${data.shipping === 0 ? 'FREE (Harare)' : `$${data.shipping.toFixed(2)}`}</p>
                   <p style="font-size: 18px; border-top: 1px solid #ddd; padding-top: 10px;">
                     <strong>Total: $${data.total.toFixed(2)}</strong>
                   </p>
@@ -145,7 +145,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData): Promise<
     `
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@algoldigitalsolutions.com',
+      from: process.env.EMAIL_FROM || 'noreply@algoldigital.com',
       to: data.customerEmail,
       subject: `Order Confirmation - ${data.orderId}`,
       html: htmlContent,
@@ -217,7 +217,7 @@ export async function sendPaymentReceiptEmail(data: PaymentEmailData): Promise<b
                 </div>
               </div>
               
-              <p>Your order will be shipped shortly. You can track your order <a href="https://algoldigitalsolutions.com/order-tracking">here</a>.</p>
+              <p>Your order is being prepared for delivery. You can track your order <a href="https://algoldigitalsolutions.com/order-tracking">here</a>.</p>
               
               <p style="margin-top: 30px; color: #666; font-size: 12px;">
                 Thank you for your business!
@@ -229,7 +229,7 @@ export async function sendPaymentReceiptEmail(data: PaymentEmailData): Promise<b
     `
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@algoldigitalsolutions.com',
+      from: process.env.EMAIL_FROM || 'noreply@algoldigital.com',
       to: data.customerEmail,
       subject: `Payment Receipt - ${data.orderId}`,
       html: htmlContent,
@@ -300,7 +300,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean>
     `
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@algoldigitalsolutions.com',
+      from: process.env.EMAIL_FROM || 'noreply@algoldigital.com',
       to: data.customerEmail,
       subject: 'Welcome to Algol Digital Solutions!',
       html: htmlContent,
@@ -322,7 +322,7 @@ Please verify your email: ${data.verificationLink}
 }
 
 /**
- * Send shipping notification
+ * Send delivery notification
  */
 export async function sendShippingNotificationEmail(data: {
   customerName: string
@@ -353,21 +353,21 @@ export async function sendShippingNotificationEmail(data: {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Your Order is on the Way!</h1>
+              <h1>Your Order is Out for Delivery!</h1>
             </div>
             <div class="content">
               <p>Hi ${data.customerName},</p>
-              <p>Great news! Your order has been shipped.</p>
+              <p>Great news! Your order is on its way to you.</p>
               
               <div class="tracking-box">
-                <h3 style="margin-top: 0;">Tracking Information</h3>
+                <h3 style="margin-top: 0;">Delivery Information</h3>
                 <p><strong>Order ID:</strong> ${data.orderId}</p>
-                <p><strong>Carrier:</strong> ${data.carrier}</p>
+                <p><strong>Courier:</strong> ${data.carrier}</p>
                 <p><strong>Tracking Number:</strong> <code>${data.trackingNumber}</code></p>
                 <p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery}</p>
               </div>
               
-              <a href="${data.trackingUrl}" class="button">Track Your Package</a>
+              <a href="${data.trackingUrl}" class="button">Track Your Order</a>
               
               <p style="margin-top: 30px; color: #666; font-size: 12px;">
                 Thank you for your purchase!
@@ -379,16 +379,16 @@ export async function sendShippingNotificationEmail(data: {
     `
 
     await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'noreply@algoldigitalsolutions.com',
+      from: process.env.EMAIL_FROM || 'noreply@algoldigital.com',
       to: data.customerEmail,
-      subject: `Your Order is Shipping - ${data.orderId}`,
+      subject: `Your Order is Out for Delivery - ${data.orderId}`,
       html: htmlContent,
     })
 
-    console.log(`[EMAIL] Shipping notification sent to ${data.customerEmail}`)
+    console.log(`[EMAIL] Delivery notification sent to ${data.customerEmail}`)
     return true
   } catch (error) {
-    console.error('[EMAIL] Failed to send shipping notification:', error)
+    console.error('[EMAIL] Failed to send delivery notification:', error)
     return false
   }
 }

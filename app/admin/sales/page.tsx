@@ -124,7 +124,7 @@ export default function SalesPage() {
                         {sale.paymentStatus}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">{sale.user.name}</td>
+                    <td className="px-6 py-4 text-sm">{sale.user?.name || 'System'}</td>
                     <td className="px-6 py-4 text-sm">
                       {new Date(sale.createdAt).toLocaleDateString()}
                     </td>

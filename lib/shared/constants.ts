@@ -8,7 +8,7 @@ export const COMPANY_INFO = {
   launching: 2026,
   country: "Zimbabwe",
   city: "Harare",
-  email: "info@algolinsights.com",
+  email: "info@algoldigital.com",
   phone: "+263 242 000 000",
 } as const
 
@@ -85,7 +85,7 @@ export const SOCIAL_LINKS = {
 
 export const LEGAL = {
   cdpaCompliant: true,
-  dataProtectionOfficer: "dpo@algolinsights.com",
+  dataProtectionOfficer: "dpo@algoldigital.com",
   privacyPolicy: "/legal/privacy",
   termsOfService: "/legal/terms",
   cookiePolicy: "/legal/cookies",

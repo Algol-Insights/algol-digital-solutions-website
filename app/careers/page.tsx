@@ -154,7 +154,7 @@ export default function CareersPage() {
                   </ul>
                 </div>
                 <a 
-                  href={`mailto:careers@algoldigitalsolutions.co.zw?subject=Application for ${job.title}`}
+                  href={`mailto:careers@algoldigital.com?subject=Application for ${job.title}`}
                   className="inline-flex items-center gap-2 bg-brand-teal-medium text-white px-6 py-3 rounded-lg font-medium hover:bg-brand-teal-dark transition-colors"
                 >
                   <Mail className="w-5 h-5" />
@@ -215,7 +215,7 @@ export default function CareersPage() {
             We're always looking for talented individuals to join our team. Send us your CV and we'll keep you in mind for future opportunities.
           </p>
           <a 
-            href="mailto:careers@algoldigitalsolutions.co.zw?subject=General Application"
+            href="mailto:careers@algoldigital.com?subject=General Application"
             className="inline-flex items-center gap-2 bg-white text-brand-teal-dark px-8 py-3 rounded-lg font-medium hover:bg-slate-100 transition-colors"
           >
             <Mail className="w-5 h-5" />

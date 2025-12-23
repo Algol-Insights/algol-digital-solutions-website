@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui-lib"
+import { WhatsAppChannel } from "@/components/whatsapp-channel"
+import { SocialFollow } from "@/components/social-follow"
 import { 
   Phone, 
   Mail, 
@@ -17,7 +19,7 @@ import {
 const faqs = [
   {
     question: "What payment methods do you accept?",
-    answer: "We accept EcoCash, bank transfers (RTGS and USD), and cash on delivery for orders within Harare."
+    answer: "We accept EcoCash, InnBucks, bank transfers (RTGS and USD), cash on delivery, and other payment arrangements. Contact us for payment assistance."
   },
   {
     question: "How long does delivery take?",
@@ -48,14 +50,14 @@ const contactMethods = [
     description: "Speak with our team",
     value: "+263 242 123 456",
     action: "tel:+263242123456",
-    available: "Mon-Fri 8AM-5PM"
+    available: "Mon-Sat 8AM-5PM"
   },
   {
     icon: Mail,
     title: "Email Support",
     description: "Get help via email",
-    value: "support@algolsolutions.co.zw",
-    action: "mailto:support@algolsolutions.co.zw",
+    value: "support@algoldigital.com",
+    action: "mailto:support@algoldigital.com",
     available: "24/7 Response"
   },
   {
@@ -72,12 +74,12 @@ const contactMethods = [
     description: "Our showroom",
     value: "123 Samora Machel Ave, Harare",
     action: "#",
-    available: "Mon-Fri 8AM-5PM, Sat 9AM-1PM"
+    available: "Mon-Sat 8AM-5PM"
   },
 ]
 
 const supportTopics = [
-  { icon: Truck, title: "Delivery & Shipping", description: "Track orders, delivery times, shipping costs", href: "/support/delivery" },
+  { icon: Truck, title: "Delivery", description: "Track orders, delivery times within Zimbabwe", href: "/delivery" },
   { icon: CreditCard, title: "Payments & Billing", description: "Payment methods, invoices, refunds", href: "/support/payments" },
   { icon: Shield, title: "Warranty & Returns", description: "Return policy, warranty claims, repairs", href: "/support/warranty" },
   { icon: FileText, title: "Product Information", description: "Specifications, compatibility, manuals", href: "/support/products" },
@@ -174,12 +176,8 @@ export default function SupportPage() {
             <h2 className="text-xl font-bold mb-6 text-center">Business Hours</h2>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               <div className="flex justify-between p-3 rounded-lg bg-background/50">
-                <span className="text-muted-foreground">Monday - Friday</span>
+                <span className="text-muted-foreground">Monday - Saturday</span>
                 <span className="font-medium">8:00 AM - 5:00 PM</span>
-              </div>
-              <div className="flex justify-between p-3 rounded-lg bg-background/50">
-                <span className="text-muted-foreground">Saturday</span>
-                <span className="font-medium">9:00 AM - 1:00 PM</span>
               </div>
               <div className="flex justify-between p-3 rounded-lg bg-background/50">
                 <span className="text-muted-foreground">Sunday</span>
@@ -194,6 +192,7 @@ export default function SupportPage() {
         </section>
 
         {/* CTA */}
+        {/* Still Need Help */}
         <section className="text-center">
           <div className="p-8 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-700 text-white">
             <h2 className="text-2xl font-bold mb-4">Still Need Help?</h2>
@@ -201,7 +200,7 @@ export default function SupportPage() {
               Our dedicated support team is ready to assist you with any questions or concerns.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a href="mailto:support@algolsolutions.co.zw">
+              <a href="mailto:support@algoldigital.com">
                 <Button className="bg-white text-violet-600 hover:bg-white/90">
                   <Mail className="mr-2 h-4 w-4" />
                   Email Us
@@ -214,6 +213,18 @@ export default function SupportPage() {
                 </Button>
               </a>
             </div>
+          </div>
+        </section>
+
+        {/* WhatsApp Channel & Social Media */}
+        <section className="grid md:grid-cols-2 gap-8">
+          <WhatsAppChannel />
+          <div className="p-6 rounded-2xl border border-border bg-card">
+            <h3 className="text-xl font-bold mb-4">Follow Us on Social Media</h3>
+            <p className="text-muted-foreground mb-6">
+              Stay connected and get the latest updates, tech tips, and exclusive offers.
+            </p>
+            <SocialFollow variant="default" />
           </div>
         </section>
       </div>

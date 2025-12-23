@@ -59,8 +59,10 @@ export default function ProductDetailPage() {
           setSelectedVariant(data.variants[0])
         }
 
-        // Fetch related products
-        const relatedResponse = await fetch('/api/products?limit=4')
+        // Fetch related products from the same category
+        const categoryId = typeof data.category === 'string' ? data.category : data.category?.id
+        const categoryParam = categoryId ? `&categoryId=${categoryId}` : ''
+        const relatedResponse = await fetch(`/api/products?limit=8${categoryParam}`)
         const relatedData = await relatedResponse.json()
         setRelatedProducts((relatedData.data || relatedData).filter((p: Product) => p.id !== params.id).slice(0, 4))
       } catch (error) {
@@ -298,8 +300,8 @@ export default function ProductDetailPage() {
                   <Truck className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium text-sm">Free Shipping</p>
-                  <p className="text-xs text-muted-foreground">Free delivery in Harare</p>
+                  <p className="font-medium text-sm">Free Delivery in Harare</p>
+                  <p className="text-xs text-muted-foreground">$10-15 other areas</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">

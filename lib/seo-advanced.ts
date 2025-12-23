@@ -86,7 +86,7 @@ export function generateOrganizationSchema() {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       telephone: '+263-242-708634',
-      email: 'support@algolinsights.com',
+      email: 'support@algoldigital.com',
     },
   }
 }

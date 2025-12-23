@@ -50,7 +50,7 @@ export default function ReturnsPage() {
               </div>
               <div>
                 <h3 className="font-bold mb-1">Contact Us</h3>
-                <p className="text-slate-400">Call +263 788 663 313 or email support@algoldigitalsolutions.co.zw to initiate your return. Provide your order number and reason for return.</p>
+                <p className="text-slate-400">Call +263 788 663 313 or email support@algoldigital.com to initiate your return. Provide your order number and reason for return.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -76,8 +76,8 @@ export default function ReturnsPage() {
                 <span className="text-xl font-bold text-brand-teal-medium">4</span>
               </div>
               <div>
-                <h3 className="font-bold mb-1">Ship or Drop Off</h3>
-                <p className="text-slate-400">Ship to our address or drop off at our Harare office. We'll arrange pickup for items within Harare city limits.</p>
+                <h3 className="font-bold mb-1">Drop Off or Pickup</h3>
+                <p className="text-slate-400">Drop off at our Harare office or we'll arrange pickup for items within Harare city limits. For other areas, courier at customer's expense.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -174,7 +174,7 @@ export default function ReturnsPage() {
               <strong className="text-white">Partial Refunds:</strong> In some cases (missing accessories, signs of use, opened software), we may issue a partial refund after assessment.
             </p>
             <p>
-              <strong className="text-white">Shipping Costs:</strong> Original shipping charges are non-refundable unless the return is due to our error or a defective product.
+              <strong className="text-white">Courier Costs:</strong> Any courier costs for returns are the customer's responsibility unless the return is due to our error or a defective product.
             </p>
           </div>
         </div>

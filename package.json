@@ -6,7 +6,8 @@
   "author": "Algol Insights",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev -p 3007",
+    "dev": "next dev -p 3007 --turbopack",
+    "dev:stable": "NODE_OPTIONS='--max-old-space-size=4096' next dev -p 3007 --turbopack",
     "build": "prisma generate && next build",
     "start": "next start -p 3007",
     "lint": "next lint",
@@ -42,6 +43,7 @@
     "next-auth": "^4.24.13",
     "next-themes": "^0.4.3",
     "nodemailer": "^7.0.11",
+    "openai": "^6.15.0",
     "pdfkit": "^0.17.2",
     "prisma": "^5.15.0",
     "qrcode": "^1.5.4",
